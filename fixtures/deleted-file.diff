@@ -1,0 +1,11 @@
+diff --git a/src/legacy.ts b/src/legacy.ts
+deleted file mode 100644
+index 3b18e51..0000000
+--- a/src/legacy.ts
++++ /dev/null
+@@ -1,5 +0,0 @@
+-export function legacyGreet(name: string): string {
+-  return "Hello, " + name + "!";
+-}
+-
+-export default legacyGreet;

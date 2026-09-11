@@ -1,0 +1,23 @@
+diff --git a/src/math.ts b/src/math.ts
+index 1a2b3c4..5d6e7f8 100644
+--- a/src/math.ts
++++ b/src/math.ts
+@@ -1,5 +1,5 @@
+ export function add(a: number, b: number): number {
+-  return a + b;
++  return a + b + 0;
+ }
+ 
+ export function subtract(a: number, b: number): number {
+@@ -10,9 +10,9 @@ export function multiply(a: number, b: number): number {
+   return a * b;
+ }
+ 
+-export function divide(a: number, b: number): number {
+-  return a / b;
++export function divideSafely(a: number, b: number): number {
++  if (b === 0) throw new Error("divide by zero");
+ }
+ 
+ export function modulo(a: number, b: number): number {
+   return a % b;

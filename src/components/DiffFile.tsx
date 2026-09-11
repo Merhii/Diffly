@@ -1,0 +1,41 @@
+import { getLanguageForPath } from "../lib/languageMap";
+import type { DiffFile as DiffFileType, ViewMode } from "../types";
+import BinaryFilePlaceholder from "./BinaryFilePlaceholder";
+import FileHeader from "./FileHeader";
+import SideBySideDiffView from "./SideBySideDiffView";
+import UnifiedDiffView from "./UnifiedDiffView";
+
+export default function DiffFile({
+  file,
+  viewMode,
+  collapsed,
+  onToggleCollapsed,
+  matchKeys,
+  activeMatchKey,
+}: {
+  file: DiffFileType;
+  viewMode: ViewMode;
+  collapsed: boolean;
+  onToggleCollapsed: () => void;
+  matchKeys: Set<string>;
+  activeMatchKey: string | null;
+}) {
+  const lang = getLanguageForPath(file.newPath ?? file.oldPath);
+
+  return (
+    <section id={`file-${file.id}`} className="overflow-hidden rounded-lg border border-border bg-surface">
+      <FileHeader file={file} collapsed={collapsed} onToggleCollapsed={onToggleCollapsed} />
+      {!collapsed && (
+        <>
+          {file.isBinary ? (
+            <BinaryFilePlaceholder />
+          ) : file.status === "renamed" && file.hunks.length === 0 ? null : viewMode === "unified" ? (
+            <UnifiedDiffView file={file} lang={lang} matchKeys={matchKeys} activeMatchKey={activeMatchKey} />
+          ) : (
+            <SideBySideDiffView file={file} lang={lang} matchKeys={matchKeys} activeMatchKey={activeMatchKey} />
+          )}
+        </>
+      )}
+    </section>
+  );
+}

@@ -1,0 +1,93 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --color-bg: #f6f7f9;
+  --color-surface: #ffffff;
+  --color-surface-raised: #ffffff;
+  --color-border: #e3e5ea;
+  --color-border-strong: #cbd0d9;
+  --color-text: #14171f;
+  --color-text-muted: #5b6472;
+  --color-text-faint: #8992a1;
+
+  --color-accent: #4f5fff;
+  --color-accent-muted: #eef0ff;
+  --color-accent-contrast: #ffffff;
+
+  --color-diff-add-bg: #e7f5ea;
+  --color-diff-add-text: #1a7f37;
+  --color-diff-add-border: #cbe9d2;
+  --color-diff-del-bg: #fceced;
+  --color-diff-del-text: #c4314b;
+  --color-diff-del-border: #f4d2d6;
+
+  --color-diff-word-add-bg: #a6e9bd;
+  --color-diff-word-del-bg: #f5aab5;
+
+  --color-gutter-text: #a3aab6;
+  --color-hunk-bg: #f0f2f7;
+  --color-hunk-text: #6b7382;
+}
+
+.dark {
+  --color-bg: #0e1015;
+  --color-surface: #161922;
+  --color-surface-raised: #1b1f2a;
+  --color-border: #2a2e3a;
+  --color-border-strong: #3a3f4e;
+  --color-text: #e6e9ef;
+  --color-text-muted: #9aa3b2;
+  --color-text-faint: #6b7280;
+
+  --color-accent: #8890ff;
+  --color-accent-muted: #232746;
+  --color-accent-contrast: #0e1015;
+
+  --color-diff-add-bg: #10301f;
+  --color-diff-add-text: #4bd07f;
+  --color-diff-add-border: #1c4a30;
+  --color-diff-del-bg: #391219;
+  --color-diff-del-text: #f27285;
+  --color-diff-del-border: #57202a;
+
+  --color-diff-word-add-bg: #1f6b3f;
+  --color-diff-word-del-bg: #7a2635;
+
+  --color-gutter-text: #565d6b;
+  --color-hunk-bg: #1b1f2a;
+  --color-hunk-text: #838da0;
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+  }
+  ::selection {
+    background-color: var(--color-accent-muted);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
