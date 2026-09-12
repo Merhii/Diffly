@@ -1,4 +1,4 @@
-# Diff Viewer
+# Diffly
 
 A standalone, browser-only viewer for `.diff`/`.patch` files. Drag and drop a
 file, pick one from disk, or paste diff text — everything is parsed and
