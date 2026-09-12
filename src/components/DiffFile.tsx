@@ -10,6 +10,10 @@ export default function DiffFile({
   viewMode,
   collapsed,
   onToggleCollapsed,
+  viewed,
+  onToggleViewed,
+  comments,
+  onSaveComment,
   matchKeys,
   activeMatchKey,
 }: {
@@ -17,6 +21,10 @@ export default function DiffFile({
   viewMode: ViewMode;
   collapsed: boolean;
   onToggleCollapsed: () => void;
+  viewed: boolean;
+  onToggleViewed: () => void;
+  comments: Record<string, string>;
+  onSaveComment: (lineKey: string, text: string) => void;
   matchKeys: Set<string>;
   activeMatchKey: string | null;
 }) {
@@ -24,15 +32,35 @@ export default function DiffFile({
 
   return (
     <section id={`file-${file.id}`} className="overflow-hidden rounded-lg border border-border bg-surface">
-      <FileHeader file={file} collapsed={collapsed} onToggleCollapsed={onToggleCollapsed} />
+      <FileHeader
+        file={file}
+        collapsed={collapsed}
+        onToggleCollapsed={onToggleCollapsed}
+        viewed={viewed}
+        onToggleViewed={onToggleViewed}
+      />
       {!collapsed && (
         <>
           {file.isBinary ? (
             <BinaryFilePlaceholder />
           ) : file.status === "renamed" && file.hunks.length === 0 ? null : viewMode === "unified" ? (
-            <UnifiedDiffView file={file} lang={lang} matchKeys={matchKeys} activeMatchKey={activeMatchKey} />
+            <UnifiedDiffView
+              file={file}
+              lang={lang}
+              matchKeys={matchKeys}
+              activeMatchKey={activeMatchKey}
+              comments={comments}
+              onSaveComment={onSaveComment}
+            />
           ) : (
-            <SideBySideDiffView file={file} lang={lang} matchKeys={matchKeys} activeMatchKey={activeMatchKey} />
+            <SideBySideDiffView
+              file={file}
+              lang={lang}
+              matchKeys={matchKeys}
+              activeMatchKey={activeMatchKey}
+              comments={comments}
+              onSaveComment={onSaveComment}
+            />
           )}
         </>
       )}

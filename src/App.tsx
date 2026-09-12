@@ -7,12 +7,20 @@ import WelcomeScreen from "./components/WelcomeScreen";
 import { useDiff } from "./context/DiffContext";
 
 export default function App() {
-  const { state, clearDiff, toggleFileCollapsed } = useDiff();
-  const { diff, theme, viewMode, collapsedFileIds, search, loadError } = state;
+  const { state, clearDiff, toggleFileCollapsed, toggleFileViewed, setComment } = useDiff();
+  const { diff, theme, accent, viewMode, collapsedFileIds, viewedFileIds, comments, search, loadError } = state;
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");
   }, [theme]);
+
+  useEffect(() => {
+    if (accent === "indigo") {
+      document.documentElement.removeAttribute("data-accent");
+    } else {
+      document.documentElement.setAttribute("data-accent", accent);
+    }
+  }, [accent]);
 
   const activeMatch = search.matches[search.activeIndex] ?? null;
 
@@ -68,7 +76,7 @@ export default function App() {
         </div>
       )}
       <div className="flex min-h-0 flex-1">
-        <Sidebar files={diff.files} />
+        <Sidebar files={diff.files} viewedFileIds={viewedFileIds} />
         <main className="flex-1 overflow-y-auto p-4">
           <div className="mx-auto flex max-w-6xl flex-col gap-4">
             {diff.files.map((file) => (
@@ -78,6 +86,10 @@ export default function App() {
                 viewMode={viewMode}
                 collapsed={collapsedFileIds.has(file.id)}
                 onToggleCollapsed={() => toggleFileCollapsed(file.id)}
+                viewed={viewedFileIds.has(file.id)}
+                onToggleViewed={() => toggleFileViewed(file.id)}
+                comments={comments}
+                onSaveComment={setComment}
                 matchKeys={matchKeysByFile.get(file.id) ?? new Set()}
                 activeMatchKey={activeMatch?.fileId === file.id ? activeMatchKey : null}
               />

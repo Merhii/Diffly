@@ -36,6 +36,12 @@ export interface ParsedDiff {
 
 export type ViewMode = "unified" | "split";
 export type Theme = "light" | "dark";
+export type Accent = "indigo" | "teal" | "amber";
+
+export interface DiffRecord {
+  comments: Record<string, string>;
+  viewedFileIds: string[];
+}
 
 export interface SideBySideRow {
   left: DiffLine | null;

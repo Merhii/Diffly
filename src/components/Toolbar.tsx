@@ -1,5 +1,6 @@
 import { ChevronsDownUp, ChevronsUpDown, Columns2, Rows3, Upload } from "lucide-react";
 import { useDiff } from "../context/DiffContext";
+import AccentPicker from "./AccentPicker";
 import SearchBar from "./SearchBar";
 import ThemeToggle from "./ThemeToggle";
 
@@ -74,6 +75,7 @@ export default function Toolbar() {
           </button>
         </div>
 
+        <AccentPicker />
         <ThemeToggle />
       </div>
     </header>

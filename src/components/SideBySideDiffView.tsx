@@ -17,11 +17,15 @@ export default function SideBySideDiffView({
   lang,
   matchKeys,
   activeMatchKey,
+  comments,
+  onSaveComment,
 }: {
   file: DiffFile;
   lang: string;
   matchKeys: Set<string>;
   activeMatchKey: string | null;
+  comments: Record<string, string>;
+  onSaveComment: (lineKey: string, text: string) => void;
 }) {
   const matchState = (key: string) => (key === activeMatchKey ? "active" : matchKeys.has(key) ? "match" : "none");
 
@@ -58,6 +62,8 @@ export default function SideBySideDiffView({
                       spans={wordDiff?.oldSpans ?? null}
                       matchKey={leftKey}
                       matchState={matchState(leftKey)}
+                      commentText={comments[leftKey] ?? null}
+                      onSaveComment={(text) => onSaveComment(leftKey, text)}
                     />
                   ) : (
                     <BlankCell />
@@ -73,6 +79,8 @@ export default function SideBySideDiffView({
                       spans={wordDiff?.newSpans ?? null}
                       matchKey={rightKey}
                       matchState={matchState(rightKey)}
+                      commentText={comments[rightKey] ?? null}
+                      onSaveComment={(text) => onSaveComment(rightKey, text)}
                     />
                   ) : (
                     <BlankCell />

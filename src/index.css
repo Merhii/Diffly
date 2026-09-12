@@ -63,6 +63,30 @@
   --color-hunk-text: #838da0;
 }
 
+[data-accent="teal"] {
+  --color-accent: #0f8b8b;
+  --color-accent-muted: #e1f5f3;
+  --color-accent-contrast: #ffffff;
+}
+
+.dark[data-accent="teal"] {
+  --color-accent: #45d6c4;
+  --color-accent-muted: #123433;
+  --color-accent-contrast: #0e1015;
+}
+
+[data-accent="amber"] {
+  --color-accent: #b45309;
+  --color-accent-muted: #fdf1de;
+  --color-accent-contrast: #ffffff;
+}
+
+.dark[data-accent="amber"] {
+  --color-accent: #f5a623;
+  --color-accent-muted: #3a2a0f;
+  --color-accent-contrast: #0e1015;
+}
+
 @layer base {
   html {
     color-scheme: light;
