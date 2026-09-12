@@ -63,28 +63,76 @@
   --color-hunk-text: #838da0;
 }
 
+/*
+ * Each accent preset carries its own add/delete palette, not just its own
+ * button/badge color — additions stay green-ish and deletions stay red-ish
+ * (the universal diff convention), but the exact hue leans toward that
+ * accent's temperature so switching presets actually re-skins the diff
+ * itself, not just the chrome around it.
+ */
+
 [data-accent="teal"] {
   --color-accent: #0f8b8b;
   --color-accent-muted: #e1f5f3;
   --color-accent-contrast: #ffffff;
+
+  --color-diff-add-bg: #e1f5f0;
+  --color-diff-add-text: #0f8f6e;
+  --color-diff-add-border: #bfe8dc;
+  --color-diff-del-bg: #fbeef2;
+  --color-diff-del-text: #c23b6a;
+  --color-diff-del-border: #f2d3dd;
+
+  --color-diff-word-add-bg: #9de8cd;
+  --color-diff-word-del-bg: #f4a8c0;
 }
 
 .dark[data-accent="teal"] {
   --color-accent: #45d6c4;
   --color-accent-muted: #123433;
   --color-accent-contrast: #0e1015;
+
+  --color-diff-add-bg: #0c2e28;
+  --color-diff-add-text: #3ddcae;
+  --color-diff-add-border: #164b3f;
+  --color-diff-del-bg: #34141f;
+  --color-diff-del-text: #f2699a;
+  --color-diff-del-border: #551f34;
+
+  --color-diff-word-add-bg: #1a6a54;
+  --color-diff-word-del-bg: #7a2445;
 }
 
 [data-accent="amber"] {
   --color-accent: #b45309;
   --color-accent-muted: #fdf1de;
   --color-accent-contrast: #ffffff;
+
+  --color-diff-add-bg: #f1f5e0;
+  --color-diff-add-text: #6b8f1a;
+  --color-diff-add-border: #dfead0;
+  --color-diff-del-bg: #fcefe6;
+  --color-diff-del-text: #c2481f;
+  --color-diff-del-border: #f3d9c5;
+
+  --color-diff-word-add-bg: #cde89d;
+  --color-diff-word-del-bg: #f5b98f;
 }
 
 .dark[data-accent="amber"] {
   --color-accent: #f5a623;
   --color-accent-muted: #3a2a0f;
   --color-accent-contrast: #0e1015;
+
+  --color-diff-add-bg: #262f0e;
+  --color-diff-add-text: #b8d94f;
+  --color-diff-add-border: #3d4a1a;
+  --color-diff-del-bg: #3a1d10;
+  --color-diff-del-text: #f2895a;
+  --color-diff-del-border: #5c2f1a;
+
+  --color-diff-word-add-bg: #5a7a1f;
+  --color-diff-word-del-bg: #7a3a1f;
 }
 
 @layer base {
