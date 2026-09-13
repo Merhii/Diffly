@@ -1,3 +1,4 @@
+import { Heart } from "lucide-react";
 import { useState } from "react";
 import { useDiff } from "../context/DiffContext";
 import BrandMark from "./BrandMark";
@@ -69,6 +70,16 @@ export default function WelcomeScreen() {
                 <path d={GITHUB_ICON_PATH} />
               </svg>
               Source on GitHub
+            </a>
+            <span className="text-text-faint">·</span>
+            <a
+              href="https://github.com/sponsors/Merhii"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-text hover:text-accent"
+            >
+              <Heart className="h-4 w-4" />
+              Sponsor
             </a>
           </div>
 
