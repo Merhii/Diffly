@@ -127,7 +127,7 @@ export default function DiffLine({
             onClick={openEditor}
             aria-label={hasComment ? "Edit comment" : "Add comment"}
             className={`absolute top-0 right-1 flex h-5 w-5 items-center justify-center rounded text-accent hover:bg-accent-muted ${
-              hasComment ? "opacity-100" : "opacity-0 group-hover/line:opacity-100"
+              hasComment ? "opacity-100" : "opacity-0 group-hover/line:opacity-100 focus-visible:opacity-100"
             }`}
           >
             <MessageSquarePlus className="h-3.5 w-3.5" />

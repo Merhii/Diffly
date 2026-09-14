@@ -48,6 +48,7 @@ type Action =
   | { type: "TOGGLE_FILE_COLLAPSED"; fileId: string }
   | { type: "SET_ALL_COLLAPSED"; collapsed: boolean; fileIds: string[] }
   | { type: "TOGGLE_FILE_VIEWED"; fileId: string }
+  | { type: "SET_ALL_VIEWED"; viewed: boolean; fileIds: string[] }
   | { type: "SET_COMMENT"; lineKey: string; text: string }
   | { type: "SET_SEARCH_QUERY"; query: string }
   | { type: "SET_SEARCH_SCOPE"; includeFilenames: boolean }
@@ -154,6 +155,18 @@ function reducer(state: AppState, action: Action): AppState {
       persist(state, { viewedFileIds });
       return { ...state, viewedFileIds, collapsedFileIds };
     }
+    case "SET_ALL_VIEWED": {
+      // Mirrors the single-file toggle's collapse behavior, but only for the
+      // affected ids — leaves any unrelated manual collapses untouched.
+      const collapsedFileIds = new Set(state.collapsedFileIds);
+      for (const id of action.fileIds) {
+        if (action.viewed) collapsedFileIds.add(id);
+        else collapsedFileIds.delete(id);
+      }
+      const viewedFileIds = action.viewed ? new Set(action.fileIds) : new Set<string>();
+      persist(state, { viewedFileIds });
+      return { ...state, viewedFileIds, collapsedFileIds };
+    }
     case "SET_COMMENT": {
       const comments = { ...state.comments };
       if (action.text.trim() === "") {
@@ -200,6 +213,7 @@ interface DiffContextValue {
   expandAll: () => void;
   collapseAll: () => void;
   toggleFileViewed: (fileId: string) => void;
+  markAllViewed: (viewed: boolean) => void;
   setComment: (lineKey: string, text: string) => void;
   setSearchQuery: (query: string) => void;
   setSearchScope: (includeFilenames: boolean) => void;
@@ -247,6 +261,12 @@ export function DiffProvider({ children }: { children: ReactNode }) {
     (fileId: string) => dispatch({ type: "TOGGLE_FILE_VIEWED", fileId }),
     [],
   );
+  const markAllViewed = useCallback(
+    (viewed: boolean) => {
+      dispatch({ type: "SET_ALL_VIEWED", viewed, fileIds: state.diff?.files.map((file) => file.id) ?? [] });
+    },
+    [state.diff],
+  );
   const setComment = useCallback(
     (lineKey: string, text: string) => dispatch({ type: "SET_COMMENT", lineKey, text }),
     [],
@@ -271,6 +291,7 @@ export function DiffProvider({ children }: { children: ReactNode }) {
       expandAll,
       collapseAll,
       toggleFileViewed,
+      markAllViewed,
       setComment,
       setSearchQuery,
       setSearchScope,
@@ -288,6 +309,7 @@ export function DiffProvider({ children }: { children: ReactNode }) {
       expandAll,
       collapseAll,
       toggleFileViewed,
+      markAllViewed,
       setComment,
       setSearchQuery,
       setSearchScope,

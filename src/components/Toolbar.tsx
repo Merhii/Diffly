@@ -1,4 +1,4 @@
-import { ChevronsDownUp, ChevronsUpDown, Columns2, Rows3, Upload } from "lucide-react";
+import { CheckCheck, ChevronsDownUp, ChevronsUpDown, Columns2, Rows3, Upload } from "lucide-react";
 import { useDiff } from "../context/DiffContext";
 import AccentPicker from "./AccentPicker";
 import BrandMark from "./BrandMark";
@@ -7,12 +7,15 @@ import ThemeToggle from "./ThemeToggle";
 
 export default function Toolbar() {
   const {
-    state: { viewMode, sourceLabel },
+    state: { viewMode, sourceLabel, diff, viewedFileIds },
     setViewMode,
     expandAll,
     collapseAll,
+    markAllViewed,
     clearDiff,
   } = useDiff();
+
+  const allViewed = Boolean(diff?.files.length) && viewedFileIds.size === diff?.files.length;
 
   return (
     <header className="flex flex-wrap items-center gap-2 border-b border-border bg-surface px-4 py-2.5">
@@ -78,6 +81,18 @@ export default function Toolbar() {
             className="flex h-8 w-8 items-center justify-center rounded-md border border-border text-text-muted hover:border-accent hover:text-accent"
           >
             <ChevronsDownUp className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => markAllViewed(!allViewed)}
+            aria-label={allViewed ? "Mark all files unviewed" : "Mark all files viewed"}
+            aria-pressed={allViewed}
+            title={allViewed ? "Mark all unviewed" : "Mark all viewed"}
+            className={`flex h-8 w-8 items-center justify-center rounded-md border text-text-muted hover:border-accent hover:text-accent ${
+              allViewed ? "border-accent text-accent" : "border-border"
+            }`}
+          >
+            <CheckCheck className="h-4 w-4" />
           </button>
         </div>
 
