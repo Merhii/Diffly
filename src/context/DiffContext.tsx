@@ -9,13 +9,8 @@ import {
 import { hashDiffText, loadDiffRecord, writeDiffRecord } from "../lib/comments";
 import { loadDiffText } from "../lib/ingestDiff";
 import { buildSearchMatches } from "../lib/search";
-import {
-  getInitialAccent,
-  getInitialTheme,
-  writeStoredAccent,
-  writeStoredTheme,
-} from "../lib/theme";
-import type { Accent, DiffRecord, ParsedDiff, SearchMatch, Theme, ViewMode } from "../types";
+import { getInitialTheme, writeStoredTheme } from "../lib/theme";
+import type { DiffRecord, ParsedDiff, SearchMatch, Theme, ViewMode } from "../types";
 
 interface SearchState {
   query: string;
@@ -31,7 +26,6 @@ interface AppState {
   loadError: string | null;
   viewMode: ViewMode;
   theme: Theme;
-  accent: Accent;
   collapsedFileIds: Set<string>;
   viewedFileIds: Set<string>;
   comments: Record<string, string>;
@@ -44,7 +38,6 @@ type Action =
   | { type: "CLEAR_DIFF" }
   | { type: "SET_VIEW_MODE"; mode: ViewMode }
   | { type: "SET_THEME"; theme: Theme }
-  | { type: "SET_ACCENT"; accent: Accent }
   | { type: "TOGGLE_FILE_COLLAPSED"; fileId: string }
   | { type: "SET_ALL_COLLAPSED"; collapsed: boolean; fileIds: string[] }
   | { type: "TOGGLE_FILE_VIEWED"; fileId: string }
@@ -70,7 +63,6 @@ function initialState(): AppState {
     loadError: null,
     viewMode: "unified",
     theme: getInitialTheme(),
-    accent: getInitialAccent(),
     collapsedFileIds: new Set(),
     viewedFileIds: new Set(),
     comments: {},
@@ -128,9 +120,6 @@ function reducer(state: AppState, action: Action): AppState {
     case "SET_THEME":
       writeStoredTheme(action.theme);
       return { ...state, theme: action.theme };
-    case "SET_ACCENT":
-      writeStoredAccent(action.accent);
-      return { ...state, accent: action.accent };
     case "TOGGLE_FILE_COLLAPSED": {
       const next = new Set(state.collapsedFileIds);
       if (next.has(action.fileId)) next.delete(action.fileId);
@@ -208,7 +197,6 @@ interface DiffContextValue {
   clearDiff: () => void;
   setViewMode: (mode: ViewMode) => void;
   toggleTheme: () => void;
-  setAccent: (accent: Accent) => void;
   toggleFileCollapsed: (fileId: string) => void;
   expandAll: () => void;
   collapseAll: () => void;
@@ -242,7 +230,6 @@ export function DiffProvider({ children }: { children: ReactNode }) {
   const toggleTheme = useCallback(() => {
     dispatch({ type: "SET_THEME", theme: state.theme === "dark" ? "light" : "dark" });
   }, [state.theme]);
-  const setAccent = useCallback((accent: Accent) => dispatch({ type: "SET_ACCENT", accent }), []);
   const toggleFileCollapsed = useCallback(
     (fileId: string) => dispatch({ type: "TOGGLE_FILE_COLLAPSED", fileId }),
     [],
@@ -286,7 +273,6 @@ export function DiffProvider({ children }: { children: ReactNode }) {
       clearDiff,
       setViewMode,
       toggleTheme,
-      setAccent,
       toggleFileCollapsed,
       expandAll,
       collapseAll,
@@ -304,7 +290,6 @@ export function DiffProvider({ children }: { children: ReactNode }) {
       clearDiff,
       setViewMode,
       toggleTheme,
-      setAccent,
       toggleFileCollapsed,
       expandAll,
       collapseAll,

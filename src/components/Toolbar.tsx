@@ -1,6 +1,5 @@
 import { CheckCheck, ChevronsDownUp, ChevronsUpDown, Columns2, Rows3, Upload } from "lucide-react";
 import { useDiff } from "../context/DiffContext";
-import AccentPicker from "./AccentPicker";
 import BrandMark from "./BrandMark";
 import SearchBar from "./SearchBar";
 import ThemeToggle from "./ThemeToggle";
@@ -95,8 +94,6 @@ export default function Toolbar() {
             <CheckCheck className="h-4 w-4" />
           </button>
         </div>
-
-        <AccentPicker />
         <ThemeToggle />
       </div>
     </header>

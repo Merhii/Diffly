@@ -8,19 +8,11 @@ import { useDiff } from "./context/DiffContext";
 
 export default function App() {
   const { state, clearDiff, toggleFileCollapsed, toggleFileViewed, setComment } = useDiff();
-  const { diff, theme, accent, viewMode, collapsedFileIds, viewedFileIds, comments, search, loadError } = state;
+  const { diff, theme, viewMode, collapsedFileIds, viewedFileIds, comments, search, loadError } = state;
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");
   }, [theme]);
-
-  useEffect(() => {
-    if (accent === "indigo") {
-      document.documentElement.removeAttribute("data-accent");
-    } else {
-      document.documentElement.setAttribute("data-accent", accent);
-    }
-  }, [accent]);
 
   const activeMatch = search.matches[search.activeIndex] ?? null;
 

@@ -2,137 +2,74 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/*
+ * "Blueprint" — grounded in architectural drafting and revision drawings
+ * rather than a generic indigo-on-slate SaaS default. Deep drafting-blue
+ * instead of near-black, brass (what drafting tools were made of) as the
+ * one accent, additions read as verdigris (patinated copper), deletions
+ * as rust (oxidized iron) — a single committed identity, not a picker of
+ * interchangeable hues.
+ */
+
 @theme {
   --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  --color-bg: #f6f7f9;
+  --color-bg: #eef2f6;
   --color-surface: #ffffff;
   --color-surface-raised: #ffffff;
-  --color-border: #e3e5ea;
-  --color-border-strong: #cbd0d9;
-  --color-text: #14171f;
-  --color-text-muted: #5b6472;
-  --color-text-faint: #8992a1;
+  --color-border: #d3dde6;
+  --color-border-strong: #b7c6d6;
+  --color-text: #16283a;
+  --color-text-muted: #52697d;
+  --color-text-faint: #7e93a6;
 
-  --color-accent: #4f5fff;
-  --color-accent-muted: #eef0ff;
+  --color-accent: #96631f;
+  --color-accent-muted: #f0e6d2;
   --color-accent-contrast: #ffffff;
 
-  --color-diff-add-bg: #e7f5ea;
-  --color-diff-add-text: #1a7f37;
-  --color-diff-add-border: #cbe9d2;
-  --color-diff-del-bg: #fceced;
-  --color-diff-del-text: #c4314b;
-  --color-diff-del-border: #f4d2d6;
+  --color-diff-add-bg: #e3efe7;
+  --color-diff-add-text: #3f7d5e;
+  --color-diff-add-border: #c3ddd0;
+  --color-diff-del-bg: #f7e9e3;
+  --color-diff-del-text: #a34a2e;
+  --color-diff-del-border: #ecd2c4;
 
-  --color-diff-word-add-bg: #a6e9bd;
-  --color-diff-word-del-bg: #f5aab5;
+  --color-diff-word-add-bg: #a8d9bc;
+  --color-diff-word-del-bg: #f0b39c;
 
-  --color-gutter-text: #a3aab6;
-  --color-hunk-bg: #f0f2f7;
-  --color-hunk-text: #6b7382;
+  --color-gutter-text: #9bb0c2;
+  --color-hunk-bg: #e4ebf1;
+  --color-hunk-text: #52697d;
 }
 
 .dark {
-  --color-bg: #0e1015;
-  --color-surface: #161922;
-  --color-surface-raised: #1b1f2a;
-  --color-border: #2a2e3a;
-  --color-border-strong: #3a3f4e;
-  --color-text: #e6e9ef;
-  --color-text-muted: #9aa3b2;
-  --color-text-faint: #6b7280;
+  --color-bg: #0d2138;
+  --color-surface: #14304f;
+  --color-surface-raised: #1a3a5c;
+  --color-border: #24466b;
+  --color-border-strong: #35608c;
+  --color-text: #e8eef5;
+  --color-text-muted: #9db3c9;
+  --color-text-faint: #6f8aa3;
 
-  --color-accent: #8890ff;
-  --color-accent-muted: #232746;
-  --color-accent-contrast: #0e1015;
+  --color-accent: #d9a34f;
+  --color-accent-muted: #3a2d18;
+  --color-accent-contrast: #0d2138;
 
-  --color-diff-add-bg: #10301f;
-  --color-diff-add-text: #4bd07f;
-  --color-diff-add-border: #1c4a30;
-  --color-diff-del-bg: #391219;
-  --color-diff-del-text: #f27285;
-  --color-diff-del-border: #57202a;
+  --color-diff-add-bg: #16332a;
+  --color-diff-add-text: #6bc79a;
+  --color-diff-add-border: #234a3c;
+  --color-diff-del-bg: #3a2118;
+  --color-diff-del-text: #e08a63;
+  --color-diff-del-border: #4d2e22;
 
-  --color-diff-word-add-bg: #1f6b3f;
-  --color-diff-word-del-bg: #7a2635;
+  --color-diff-word-add-bg: #2a5c45;
+  --color-diff-word-del-bg: #6b3524;
 
-  --color-gutter-text: #565d6b;
-  --color-hunk-bg: #1b1f2a;
-  --color-hunk-text: #838da0;
-}
-
-/*
- * Each accent preset carries its own add/delete palette, not just its own
- * button/badge color — additions stay green-ish and deletions stay red-ish
- * (the universal diff convention), but the exact hue leans toward that
- * accent's temperature so switching presets actually re-skins the diff
- * itself, not just the chrome around it.
- */
-
-[data-accent="teal"] {
-  --color-accent: #0f8b8b;
-  --color-accent-muted: #e1f5f3;
-  --color-accent-contrast: #ffffff;
-
-  --color-diff-add-bg: #e1f5f0;
-  --color-diff-add-text: #0f8f6e;
-  --color-diff-add-border: #bfe8dc;
-  --color-diff-del-bg: #fbeef2;
-  --color-diff-del-text: #c23b6a;
-  --color-diff-del-border: #f2d3dd;
-
-  --color-diff-word-add-bg: #9de8cd;
-  --color-diff-word-del-bg: #f4a8c0;
-}
-
-.dark[data-accent="teal"] {
-  --color-accent: #45d6c4;
-  --color-accent-muted: #123433;
-  --color-accent-contrast: #0e1015;
-
-  --color-diff-add-bg: #0c2e28;
-  --color-diff-add-text: #3ddcae;
-  --color-diff-add-border: #164b3f;
-  --color-diff-del-bg: #34141f;
-  --color-diff-del-text: #f2699a;
-  --color-diff-del-border: #551f34;
-
-  --color-diff-word-add-bg: #1a6a54;
-  --color-diff-word-del-bg: #7a2445;
-}
-
-[data-accent="amber"] {
-  --color-accent: #b45309;
-  --color-accent-muted: #fdf1de;
-  --color-accent-contrast: #ffffff;
-
-  --color-diff-add-bg: #f1f5e0;
-  --color-diff-add-text: #6b8f1a;
-  --color-diff-add-border: #dfead0;
-  --color-diff-del-bg: #fcefe6;
-  --color-diff-del-text: #c2481f;
-  --color-diff-del-border: #f3d9c5;
-
-  --color-diff-word-add-bg: #cde89d;
-  --color-diff-word-del-bg: #f5b98f;
-}
-
-.dark[data-accent="amber"] {
-  --color-accent: #f5a623;
-  --color-accent-muted: #3a2a0f;
-  --color-accent-contrast: #0e1015;
-
-  --color-diff-add-bg: #262f0e;
-  --color-diff-add-text: #b8d94f;
-  --color-diff-add-border: #3d4a1a;
-  --color-diff-del-bg: #3a1d10;
-  --color-diff-del-text: #f2895a;
-  --color-diff-del-border: #5c2f1a;
-
-  --color-diff-word-add-bg: #5a7a1f;
-  --color-diff-word-del-bg: #7a3a1f;
+  --color-gutter-text: #5b7691;
+  --color-hunk-bg: #17324f;
+  --color-hunk-text: #9db3c9;
 }
 
 @layer base {
