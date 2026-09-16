@@ -42,3 +42,24 @@ auto-detect a Vite project and deploy `dist/` directly.
 GitHub Pages is the one exception: for a project page (not a user/org root
 page) you need to set `base: '/<repo-name>/'` in `vite.config.ts` before
 building.
+
+## CLI
+
+`bin/diffly.js` opens Diffly with a diff already loaded — no manual
+drag-drop/paste — so a coding agent or a developer can jump straight to a
+review. It serves the already-built `dist/` from a local server on an
+ephemeral port and opens your default browser; nothing leaves the machine
+and there's no size limit on the diff.
+
+Not published to npm yet, so today it's run from a clone:
+
+```sh
+npm run build          # bin/diffly.js serves dist/, so build first
+node bin/diffly.js my.patch     # load a specific file
+git diff | node bin/diffly.js   # pipe a diff in
+node bin/diffly.js              # no argument or pipe: uses `git diff`,
+                                 # falling back to `git diff --staged`
+```
+
+Or run `npm link` once to get a global `diffly` command on this machine
+(`diffly my.patch`, `git diff | diffly`, bare `diffly`).

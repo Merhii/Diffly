@@ -7,12 +7,20 @@ import WelcomeScreen from "./components/WelcomeScreen";
 import { useDiff } from "./context/DiffContext";
 
 export default function App() {
-  const { state, clearDiff, toggleFileCollapsed, toggleFileViewed, setComment } = useDiff();
+  const { state, loadDiff, clearDiff, toggleFileCollapsed, toggleFileViewed, setComment } = useDiff();
   const { diff, theme, viewMode, collapsedFileIds, viewedFileIds, comments, search, loadError } = state;
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");
   }, [theme]);
+
+  useEffect(() => {
+    const preloaded = window.__DIFFLY_PRELOADED_DIFF__;
+    if (preloaded) loadDiff(preloaded, "CLI");
+    // Only ever relevant once, on the initial page the CLI served — not a
+    // reactive dependency, so intentionally an empty deps array.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const activeMatch = search.matches[search.activeIndex] ?? null;
 
