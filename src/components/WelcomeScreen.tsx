@@ -26,7 +26,7 @@ export default function WelcomeScreen() {
         <div className="mb-8 text-center">
           <div className="mb-3 flex items-center justify-center gap-2">
             <BrandMark className="h-7 w-7 text-text" />
-            <h1 className="text-2xl font-semibold tracking-tight text-text">Diffly</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-text">Diffly</h1>
           </div>
           <p className="mt-2 text-sm text-text-muted">
             Read a .diff or .patch file with syntax highlighting, side-by-side comparison, and search

@@ -18,7 +18,7 @@ export default function Toolbar() {
 
   return (
     <header className="flex flex-wrap items-center gap-2 border-b border-border bg-surface px-4 py-2.5">
-      <span className="flex shrink-0 items-center gap-1.5 pr-1 font-semibold tracking-tight text-text">
+      <span className="flex shrink-0 items-center gap-1.5 pr-1 font-bold tracking-tight text-text">
         <BrandMark className="h-4 w-4" />
         Diffly
       </span>
