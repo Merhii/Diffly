@@ -1,12 +1,9 @@
+import { lineKey } from "../lib/lineKey";
 import { pairHunkLines } from "../lib/pairLines";
 import { computeWordDiff } from "../lib/wordDiff";
-import type { DiffFile, DiffLine as DiffLineType } from "../types";
+import type { DiffFile } from "../types";
 import DiffLine from "./DiffLine";
 import HunkHeader from "./HunkHeader";
-
-function lineKey(fileId: string, hunkIndex: number, line: DiffLineType, hunkLines: DiffLineType[]): string {
-  return `${fileId}:${hunkIndex}:${hunkLines.indexOf(line)}`;
-}
 
 export default function UnifiedDiffView({
   file,

@@ -69,3 +69,32 @@ export interface SearchMatch {
   hunkIndex?: number;
   lineIndexInHunk?: number;
 }
+
+/** A contiguous block of lines deleted in one place and re-added, unchanged, elsewhere. */
+export interface MoveOperation {
+  type: "move";
+  fromKeys: string[];
+  toKeys: string[];
+  lineCount: number;
+}
+
+/** The same substring substitution recurring across 3+ modified lines in the diff. */
+export interface FindReplaceOperation {
+  type: "find-replace";
+  oldText: string;
+  newText: string;
+  occurrences: { delKey: string; addKey: string }[];
+}
+
+/** A 1:1 modified line pair with a real word-diff — already computed by pairLines/wordDiff, surfaced here for a consistent operations API. */
+export interface UpdateOperation {
+  type: "update";
+  delKey: string;
+  addKey: string;
+}
+
+export interface DetectedOperations {
+  moves: MoveOperation[];
+  findReplaces: FindReplaceOperation[];
+  updates: UpdateOperation[];
+}
