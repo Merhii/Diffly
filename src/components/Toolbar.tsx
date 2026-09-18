@@ -1,4 +1,4 @@
-import { CheckCheck, ChevronsDownUp, ChevronsUpDown, Columns2, Rows3, Upload } from "lucide-react";
+import { CheckCheck, ChevronsDownUp, ChevronsUpDown, Columns2, Rows3, X } from "lucide-react";
 import { useDiff } from "../context/DiffContext";
 import BrandMark from "./BrandMark";
 import SearchBar from "./SearchBar";
@@ -28,8 +28,8 @@ export default function Toolbar() {
         onClick={clearDiff}
         className="flex shrink-0 items-center gap-1.5 rounded-md border border-border-strong px-2.5 py-1.5 text-xs font-medium text-text-muted hover:border-accent hover:text-accent"
       >
-        <Upload className="h-3.5 w-3.5" />
-        Load another diff
+        <X className="h-3.5 w-3.5" />
+        Close diff
       </button>
 
       {sourceLabel && (

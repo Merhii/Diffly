@@ -1,8 +1,9 @@
 # Diffly
 
-A standalone, browser-only viewer for `.diff`/`.patch` files. Drag and drop a
-file, pick one from disk, or paste diff text — everything is parsed and
-rendered entirely client-side. Nothing you load is ever sent anywhere.
+A GitHub-PR-style diff viewer that opens from your terminal with a single
+command (see [CLI](#cli) below) — for you, or for a coding agent handing off
+a diff it just generated. Everything is parsed and rendered entirely
+client-side; nothing you load is ever sent anywhere.
 
 Features: unified and side-by-side views, syntax highlighting, word-level
 highlighting of changed text within a modified line, search across file
