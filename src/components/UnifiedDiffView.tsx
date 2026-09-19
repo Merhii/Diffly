@@ -1,4 +1,5 @@
 import { lineKey } from "../lib/lineKey";
+import type { MoveCounterpart } from "../lib/moveLookup";
 import { pairHunkLines } from "../lib/pairLines";
 import { computeWordDiff } from "../lib/wordDiff";
 import type { DiffFile } from "../types";
@@ -12,6 +13,7 @@ export default function UnifiedDiffView({
   activeMatchKey,
   comments,
   onSaveComment,
+  moveLookup,
 }: {
   file: DiffFile;
   lang: string;
@@ -19,6 +21,7 @@ export default function UnifiedDiffView({
   activeMatchKey: string | null;
   comments: Record<string, string>;
   onSaveComment: (lineKey: string, text: string) => void;
+  moveLookup: Map<string, MoveCounterpart>;
 }) {
   const matchState = (key: string) => (key === activeMatchKey ? "active" : matchKeys.has(key) ? "match" : "none");
 
@@ -72,6 +75,7 @@ export default function UnifiedDiffView({
                       matchState={matchState(leftKey)}
                       commentText={comments[leftKey] ?? null}
                       onSaveComment={(text) => onSaveComment(leftKey, text)}
+                      moveInfo={moveLookup.get(leftKey) ?? null}
                     />
                   )}
                   {row.right && rightKey && (
@@ -87,6 +91,7 @@ export default function UnifiedDiffView({
                       matchState={matchState(rightKey)}
                       commentText={comments[rightKey] ?? null}
                       onSaveComment={(text) => onSaveComment(rightKey, text)}
+                      moveInfo={moveLookup.get(rightKey) ?? null}
                     />
                   )}
                 </div>

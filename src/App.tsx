@@ -1,10 +1,13 @@
 import { useEffect, useMemo } from "react";
 import DiffFile from "./components/DiffFile";
 import ErrorBanner from "./components/ErrorBanner";
+import FindReplaceSummary from "./components/FindReplaceSummary";
 import Sidebar from "./components/Sidebar";
 import Toolbar from "./components/Toolbar";
 import WelcomeScreen from "./components/WelcomeScreen";
 import { useDiff } from "./context/DiffContext";
+import { detectOperations } from "./lib/detectOperations";
+import { buildMoveLookup } from "./lib/moveLookup";
 
 export default function App() {
   const { state, loadDiff, clearDiff, toggleFileCollapsed, toggleFileViewed, setComment } = useDiff();
@@ -21,6 +24,9 @@ export default function App() {
     // reactive dependency, so intentionally an empty deps array.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const operations = useMemo(() => (diff ? detectOperations(diff) : null), [diff]);
+  const moveLookup = useMemo(() => buildMoveLookup(operations?.moves ?? []), [operations]);
 
   const activeMatch = search.matches[search.activeIndex] ?? null;
 
@@ -79,6 +85,7 @@ export default function App() {
         <Sidebar files={diff.files} viewedFileIds={viewedFileIds} />
         <main className="flex-1 overflow-y-auto p-4">
           <div className="mx-auto flex max-w-6xl flex-col gap-4">
+            {operations && <FindReplaceSummary findReplaces={operations.findReplaces} />}
             {diff.files.map((file) => (
               <DiffFile
                 key={file.id}
@@ -92,6 +99,7 @@ export default function App() {
                 onSaveComment={setComment}
                 matchKeys={matchKeysByFile.get(file.id) ?? new Set()}
                 activeMatchKey={activeMatch?.fileId === file.id ? activeMatchKey : null}
+                moveLookup={moveLookup}
               />
             ))}
           </div>

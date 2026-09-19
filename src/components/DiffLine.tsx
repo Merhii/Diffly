@@ -1,7 +1,9 @@
-import { MessageSquarePlus, Trash2 } from "lucide-react";
+import { ArrowLeftRight, MessageSquarePlus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { renderLineSegments } from "../lib/renderLine";
+import { scrollToLineKey } from "../lib/scrollToLineKey";
 import type { LineType, WordDiffSpan } from "../types";
+import type { MoveCounterpart } from "../lib/moveLookup";
 
 type MatchState = "none" | "match" | "active";
 
@@ -17,6 +19,7 @@ interface DiffLineProps {
   matchKey?: string;
   commentText?: string | null;
   onSaveComment?: (text: string) => void;
+  moveInfo?: MoveCounterpart | null;
 }
 
 const ROW_BG: Record<LineType, string> = {
@@ -69,12 +72,16 @@ export default function DiffLine({
   matchKey,
   commentText,
   onSaveComment,
+  moveInfo,
 }: DiffLineProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState(commentText ?? "");
 
   const segments = renderLineSegments(content, lang, spans);
-  const rowBg = ROW_BG[type];
+  // A moved line reads as "relocated," not "deleted"/"added" — the accent
+  // treatment replaces the usual del/add background rather than layering
+  // on top of it, so it doesn't look like an unrelated real change.
+  const rowBg = moveInfo ? "bg-accent-muted border-l-2 border-accent" : ROW_BG[type];
   const hasComment = Boolean(commentText);
   const matchRing =
     matchState === "active"
@@ -118,8 +125,20 @@ export default function DiffLine({
       >
         {gutters}
         <span className={`select-none ${MARKER_COLOR[type]}`}>{MARKER_CHAR[type]}</span>
-        <span className="whitespace-pre-wrap break-all pr-4 text-text">
-          <Segments segments={segments} type={type} />
+        <span className="flex min-w-0 items-start gap-2 pr-4 text-text">
+          <span className="min-w-0 flex-1 whitespace-pre-wrap break-all">
+            <Segments segments={segments} type={type} />
+          </span>
+          {moveInfo?.isFirstInRun && (
+            <button
+              type="button"
+              onClick={() => scrollToLineKey(moveInfo.counterpartKeys[0])}
+              className="inline-flex shrink-0 items-center gap-1 rounded-full border border-accent px-2 py-0.5 font-sans text-[10px] font-medium text-accent hover:bg-accent-muted"
+            >
+              <ArrowLeftRight className="h-3 w-3" />
+              Moved ({moveInfo.lineCount} line{moveInfo.lineCount === 1 ? "" : "s"})
+            </button>
+          )}
         </span>
         {onSaveComment && (
           <button

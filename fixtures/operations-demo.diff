@@ -1,0 +1,39 @@
+diff --git a/src/handlers.ts b/src/handlers.ts
+index 1111111..2222222 100644
+--- a/src/handlers.ts
++++ b/src/handlers.ts
+@@ -1,11 +1,11 @@
+ export function setup() {
+-  function handleUserCreated(payload: unknown): void {
+-    oldService.processEvent(payload);
+-  }
+-
+   function handleUserDeleted(payload: unknown): void {
+     console.log("deleted", payload);
+   }
+
++  function handleUserCreated(payload: unknown): void {
++    oldService.processEvent(payload);
++  }
++
+   return { handleUserCreated, handleUserDeleted };
+ }
+diff --git a/src/services.ts b/src/services.ts
+index 3333333..4444444 100644
+--- a/src/services.ts
++++ b/src/services.ts
+@@ -1,11 +1,11 @@
+ export function callAll() {
+-  oldService.start();
++  newService.start();
+ }
+
+ export function pingAll() {
+-  oldService.ping();
++  newService.ping();
+ }
+
+ export function shutdown() {
+-  oldService.stop();
++  newService.stop();
+ }

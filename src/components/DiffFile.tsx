@@ -1,4 +1,5 @@
 import { getLanguageForPath } from "../lib/languageMap";
+import type { MoveCounterpart } from "../lib/moveLookup";
 import type { DiffFile as DiffFileType, ViewMode } from "../types";
 import BinaryFilePlaceholder from "./BinaryFilePlaceholder";
 import FileHeader from "./FileHeader";
@@ -16,6 +17,7 @@ export default function DiffFile({
   onSaveComment,
   matchKeys,
   activeMatchKey,
+  moveLookup,
 }: {
   file: DiffFileType;
   viewMode: ViewMode;
@@ -27,6 +29,7 @@ export default function DiffFile({
   onSaveComment: (lineKey: string, text: string) => void;
   matchKeys: Set<string>;
   activeMatchKey: string | null;
+  moveLookup: Map<string, MoveCounterpart>;
 }) {
   const lang = getLanguageForPath(file.newPath ?? file.oldPath);
 
@@ -51,6 +54,7 @@ export default function DiffFile({
               activeMatchKey={activeMatchKey}
               comments={comments}
               onSaveComment={onSaveComment}
+              moveLookup={moveLookup}
             />
           ) : (
             <SideBySideDiffView
@@ -60,6 +64,7 @@ export default function DiffFile({
               activeMatchKey={activeMatchKey}
               comments={comments}
               onSaveComment={onSaveComment}
+              moveLookup={moveLookup}
             />
           )}
         </>
