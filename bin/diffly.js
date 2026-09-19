@@ -65,11 +65,14 @@ function openBrowser(url) {
 }
 
 function main() {
-  const distIndexPath = path.join(distDir, "index.html");
+  // viewer.html (not index.html) is the review app — index.html is the
+  // public marketing site's entry and has no diff-loading capability at
+  // all, see vite.config.ts's two-entry build.
+  const distViewerPath = path.join(distDir, "viewer.html");
   try {
-    readFileSync(distIndexPath);
+    readFileSync(distViewerPath);
   } catch {
-    console.error(`No build found at ${distDir}. Run "npm run build" first.`);
+    console.error(`No build found at ${distDir} (missing viewer.html). Run "npm run build" first.`);
     process.exitCode = 1;
     return;
   }
@@ -91,8 +94,8 @@ function main() {
   const server = createServer(async (req, res) => {
     try {
       const requestPath = decodeURIComponent(new URL(req.url, "http://localhost").pathname);
-      const isIndex = requestPath === "/" || requestPath === "/index.html";
-      const filePath = isIndex ? distIndexPath : path.join(distDir, requestPath);
+      const isViewer = requestPath === "/" || requestPath === "/viewer.html";
+      const filePath = isViewer ? distViewerPath : path.join(distDir, requestPath);
 
       // never serve a path that escapes dist/
       if (!filePath.startsWith(distDir)) {
@@ -101,8 +104,8 @@ function main() {
         return;
       }
 
-      if (isIndex) {
-        const html = await readFileAsync(distIndexPath, "utf8");
+      if (isViewer) {
+        const html = await readFileAsync(distViewerPath, "utf8");
         const injected = injectDiffIntoHtml(html, result.text);
         res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
         res.end(injected);

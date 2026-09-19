@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef } from "react";
+import BrandMark from "./components/BrandMark";
 import DiffFile from "./components/DiffFile";
 import ErrorBanner from "./components/ErrorBanner";
 import FindReplaceSummary from "./components/FindReplaceSummary";
 import Sidebar from "./components/Sidebar";
 import Toolbar from "./components/Toolbar";
-import WelcomeScreen from "./components/WelcomeScreen";
 import { useDiff } from "./context/DiffContext";
 import { detectOperations } from "./lib/detectOperations";
 import { buildMoveLookup } from "./lib/moveLookup";
@@ -115,9 +115,24 @@ export default function App() {
   }, [diff, search.query, setSearchQuery]);
 
   if (!diff) {
+    // This app is only ever booted by the CLI with a diff already injected —
+    // reaching this branch means either that injection produced something
+    // loadDiffText couldn't parse (show why), or the page was opened
+    // directly with nothing injected at all (e.g. local dev on viewer.html).
+    // The actual "how to use Diffly" pitch lives on the public landing page
+    // (src/LandingPage.tsx) now, not here.
     return (
-      <div className="min-h-screen bg-bg">
-        <WelcomeScreen />
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-bg px-6 text-center">
+        <BrandMark className="h-8 w-8 text-text-faint" />
+        {loadError ? (
+          <div className="w-full max-w-md">
+            <ErrorBanner message={loadError} onDismiss={clearDiff} />
+          </div>
+        ) : (
+          <p className="text-sm text-text-muted">
+            No diff loaded. Run <code className="font-mono text-text">diffly</code> in your terminal.
+          </p>
+        )}
       </div>
     );
   }
