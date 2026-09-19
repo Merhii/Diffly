@@ -21,3 +21,15 @@ export function writeStoredTheme(theme: Theme): void {
 export function getInitialTheme(): Theme {
   return readStoredTheme() ?? getSystemTheme();
 }
+
+const SIDEBAR_STORAGE_KEY = "diff-viewer:sidebarCollapsed";
+
+export function getInitialSidebarCollapsed(): boolean {
+  if (typeof window === "undefined") return false;
+  return window.localStorage.getItem(SIDEBAR_STORAGE_KEY) === "true";
+}
+
+export function writeStoredSidebarCollapsed(collapsed: boolean): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(SIDEBAR_STORAGE_KEY, String(collapsed));
+}

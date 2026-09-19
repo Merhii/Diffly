@@ -16,6 +16,7 @@ export default function SearchBar() {
     <div className="flex items-center gap-1.5 rounded-md border border-border bg-surface px-2 py-1">
       <Search className="h-3.5 w-3.5 shrink-0 text-text-faint" />
       <input
+        id="diffly-search"
         type="text"
         value={search.query}
         onChange={(event) => setSearchQuery(event.target.value)}

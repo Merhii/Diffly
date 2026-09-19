@@ -21,17 +21,20 @@ export default function FileHeader({
   onToggleCollapsed,
   viewed,
   onToggleViewed,
+  roundedBottom = false,
 }: {
   file: DiffFile;
   collapsed: boolean;
   onToggleCollapsed: () => void;
   viewed: boolean;
   onToggleViewed: () => void;
+  /** True when nothing renders below this header (collapsed, or a pure rename with no hunks) — it's the whole visible card, so it needs the section's bottom corners too. */
+  roundedBottom?: boolean;
 }) {
   return (
     <div
       data-file-anchor={file.id}
-      className="flex w-full items-center gap-2 border-b border-border bg-surface px-3 py-2"
+      className={`sticky top-0 z-10 flex w-full items-center gap-2 rounded-t-lg border-b border-border bg-surface px-3 py-2 ${roundedBottom ? "rounded-b-lg" : ""}`}
     >
       <button type="button" onClick={onToggleCollapsed} className="flex min-w-0 flex-1 items-center gap-2 text-left">
         {collapsed ? (

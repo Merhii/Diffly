@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import DiffFile from "./components/DiffFile";
 import ErrorBanner from "./components/ErrorBanner";
 import FindReplaceSummary from "./components/FindReplaceSummary";
@@ -10,8 +10,10 @@ import { detectOperations } from "./lib/detectOperations";
 import { buildMoveLookup } from "./lib/moveLookup";
 
 export default function App() {
-  const { state, loadDiff, clearDiff, toggleFileCollapsed, toggleFileViewed, setComment } = useDiff();
-  const { diff, theme, viewMode, collapsedFileIds, viewedFileIds, comments, search, loadError } = state;
+  const { state, loadDiff, clearDiff, toggleFileCollapsed, toggleFileViewed, setComment, setSearchQuery } =
+    useDiff();
+  const { diff, theme, viewMode, sidebarCollapsed, collapsedFileIds, viewedFileIds, comments, search, loadError } =
+    state;
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");
@@ -65,6 +67,53 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeMatch, activeMatchKey]);
 
+  const fileIndexRef = useRef(0);
+
+  useEffect(() => {
+    function isTypingTarget(target: EventTarget | null): boolean {
+      return target instanceof HTMLElement && (target.tagName === "INPUT" || target.tagName === "TEXTAREA");
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      // Escape always clears an active search, regardless of what has
+      // focus — typing in a comment box shouldn't block "get me out of
+      // this search."
+      if (event.key === "Escape") {
+        if (search.query) {
+          setSearchQuery("");
+          const active = document.activeElement;
+          if (active instanceof HTMLElement && active.id === "diffly-search") active.blur();
+        }
+        return;
+      }
+
+      // j/k/slash are navigation shortcuts, not something that should fire
+      // while the user is typing in search or a line comment.
+      if (isTypingTarget(event.target)) return;
+
+      if (event.key === "/") {
+        event.preventDefault();
+        document.getElementById("diffly-search")?.focus();
+        return;
+      }
+
+      if (!diff || diff.files.length === 0) return;
+
+      if (event.key === "j" || event.key === "k") {
+        const delta = event.key === "j" ? 1 : -1;
+        const next = Math.min(Math.max(fileIndexRef.current + delta, 0), diff.files.length - 1);
+        fileIndexRef.current = next;
+        const fileId = diff.files[next].id;
+        document
+          .querySelector(`[data-file-anchor="${fileId}"]`)
+          ?.scrollIntoView({ block: "start", behavior: "smooth" });
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [diff, search.query, setSearchQuery]);
+
   if (!diff) {
     return (
       <div className="min-h-screen bg-bg">
@@ -82,7 +131,7 @@ export default function App() {
         </div>
       )}
       <div className="flex min-h-0 flex-1">
-        <Sidebar files={diff.files} viewedFileIds={viewedFileIds} />
+        {!sidebarCollapsed && <Sidebar files={diff.files} viewedFileIds={viewedFileIds} />}
         <main className="flex-1 overflow-y-auto p-4">
           <div className="mx-auto flex max-w-6xl flex-col gap-4">
             {operations && <FindReplaceSummary findReplaces={operations.findReplaces} />}

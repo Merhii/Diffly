@@ -32,21 +32,31 @@ export default function DiffFile({
   moveLookup: Map<string, MoveCounterpart>;
 }) {
   const lang = getLanguageForPath(file.newPath ?? file.oldPath);
+  const isPureRename = file.status === "renamed" && file.hunks.length === 0;
+  // The header needs the section's own rounded corners on its own when it's
+  // effectively the whole visible card — otherwise corner-rounding lives on
+  // the content wrapper below. Kept as two separately-clipped elements
+  // (rather than overflow-hidden on this outer section) specifically so the
+  // header can be `position: sticky` relative to the page's scroll
+  // container — overflow-hidden on an ancestor constrains sticky to that
+  // ancestor's own bounds, which defeats the point here.
+  const roundedBottom = collapsed || isPureRename;
 
   return (
-    <section id={`file-${file.id}`} className="overflow-hidden rounded-lg border border-border bg-surface">
+    <section id={`file-${file.id}`} className="rounded-lg border border-border bg-surface">
       <FileHeader
         file={file}
         collapsed={collapsed}
         onToggleCollapsed={onToggleCollapsed}
         viewed={viewed}
         onToggleViewed={onToggleViewed}
+        roundedBottom={roundedBottom}
       />
-      {!collapsed && (
-        <>
+      {!collapsed && !isPureRename && (
+        <div className="overflow-hidden rounded-b-lg">
           {file.isBinary ? (
             <BinaryFilePlaceholder />
-          ) : file.status === "renamed" && file.hunks.length === 0 ? null : viewMode === "unified" ? (
+          ) : viewMode === "unified" ? (
             <UnifiedDiffView
               file={file}
               lang={lang}
@@ -67,7 +77,7 @@ export default function DiffFile({
               moveLookup={moveLookup}
             />
           )}
-        </>
+        </div>
       )}
     </section>
   );

@@ -1,4 +1,4 @@
-import { CheckCheck, ChevronsDownUp, ChevronsUpDown, Columns2, Rows3, X } from "lucide-react";
+import { CheckCheck, ChevronsDownUp, ChevronsUpDown, Columns2, PanelLeft, PanelLeftClose, Rows3, X } from "lucide-react";
 import { useDiff } from "../context/DiffContext";
 import BrandMark from "./BrandMark";
 import SearchBar from "./SearchBar";
@@ -6,11 +6,12 @@ import ThemeToggle from "./ThemeToggle";
 
 export default function Toolbar() {
   const {
-    state: { viewMode, sourceLabel, diff, viewedFileIds },
+    state: { viewMode, sourceLabel, diff, viewedFileIds, sidebarCollapsed },
     setViewMode,
     expandAll,
     collapseAll,
     markAllViewed,
+    toggleSidebar,
     clearDiff,
   } = useDiff();
 
@@ -22,6 +23,16 @@ export default function Toolbar() {
         <BrandMark className="h-4 w-4" />
         Diffly
       </span>
+
+      <button
+        type="button"
+        onClick={toggleSidebar}
+        aria-label={sidebarCollapsed ? "Show file list" : "Hide file list"}
+        title={sidebarCollapsed ? "Show file list" : "Hide file list"}
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border text-text-muted hover:border-accent hover:text-accent"
+      >
+        {sidebarCollapsed ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+      </button>
 
       <button
         type="button"

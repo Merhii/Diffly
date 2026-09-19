@@ -9,7 +9,7 @@ import {
 import { hashDiffText, loadDiffRecord, writeDiffRecord } from "../lib/comments";
 import { loadDiffText } from "../lib/ingestDiff";
 import { buildSearchMatches } from "../lib/search";
-import { getInitialTheme, writeStoredTheme } from "../lib/theme";
+import { getInitialSidebarCollapsed, getInitialTheme, writeStoredSidebarCollapsed, writeStoredTheme } from "../lib/theme";
 import type { DiffRecord, ParsedDiff, SearchMatch, Theme, ViewMode } from "../types";
 
 interface SearchState {
@@ -26,6 +26,7 @@ interface AppState {
   loadError: string | null;
   viewMode: ViewMode;
   theme: Theme;
+  sidebarCollapsed: boolean;
   collapsedFileIds: Set<string>;
   viewedFileIds: Set<string>;
   comments: Record<string, string>;
@@ -38,6 +39,7 @@ type Action =
   | { type: "CLEAR_DIFF" }
   | { type: "SET_VIEW_MODE"; mode: ViewMode }
   | { type: "SET_THEME"; theme: Theme }
+  | { type: "TOGGLE_SIDEBAR" }
   | { type: "TOGGLE_FILE_COLLAPSED"; fileId: string }
   | { type: "SET_ALL_COLLAPSED"; collapsed: boolean; fileIds: string[] }
   | { type: "TOGGLE_FILE_VIEWED"; fileId: string }
@@ -63,6 +65,7 @@ function initialState(): AppState {
     loadError: null,
     viewMode: "unified",
     theme: getInitialTheme(),
+    sidebarCollapsed: getInitialSidebarCollapsed(),
     collapsedFileIds: new Set(),
     viewedFileIds: new Set(),
     comments: {},
@@ -120,6 +123,11 @@ function reducer(state: AppState, action: Action): AppState {
     case "SET_THEME":
       writeStoredTheme(action.theme);
       return { ...state, theme: action.theme };
+    case "TOGGLE_SIDEBAR": {
+      const sidebarCollapsed = !state.sidebarCollapsed;
+      writeStoredSidebarCollapsed(sidebarCollapsed);
+      return { ...state, sidebarCollapsed };
+    }
     case "TOGGLE_FILE_COLLAPSED": {
       const next = new Set(state.collapsedFileIds);
       if (next.has(action.fileId)) next.delete(action.fileId);
@@ -197,6 +205,7 @@ interface DiffContextValue {
   clearDiff: () => void;
   setViewMode: (mode: ViewMode) => void;
   toggleTheme: () => void;
+  toggleSidebar: () => void;
   toggleFileCollapsed: (fileId: string) => void;
   expandAll: () => void;
   collapseAll: () => void;
@@ -230,6 +239,7 @@ export function DiffProvider({ children }: { children: ReactNode }) {
   const toggleTheme = useCallback(() => {
     dispatch({ type: "SET_THEME", theme: state.theme === "dark" ? "light" : "dark" });
   }, [state.theme]);
+  const toggleSidebar = useCallback(() => dispatch({ type: "TOGGLE_SIDEBAR" }), []);
   const toggleFileCollapsed = useCallback(
     (fileId: string) => dispatch({ type: "TOGGLE_FILE_COLLAPSED", fileId }),
     [],
@@ -273,6 +283,7 @@ export function DiffProvider({ children }: { children: ReactNode }) {
       clearDiff,
       setViewMode,
       toggleTheme,
+      toggleSidebar,
       toggleFileCollapsed,
       expandAll,
       collapseAll,
@@ -290,6 +301,7 @@ export function DiffProvider({ children }: { children: ReactNode }) {
       clearDiff,
       setViewMode,
       toggleTheme,
+      toggleSidebar,
       toggleFileCollapsed,
       expandAll,
       collapseAll,
