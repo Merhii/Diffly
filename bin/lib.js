@@ -27,11 +27,18 @@ export function resolveDiffInput({ argPath, isTTY, readFile, readStdin, execGit 
     } catch (err) {
       return { ok: false, error: `Could not read "${argPath}": ${err.message}` };
     }
+    if (!text.trim()) {
+      return { ok: false, error: `"${argPath}" is empty — nothing to review.` };
+    }
     return { ok: true, text, source: argPath };
   }
 
   if (!isTTY) {
-    return { ok: true, text: readStdin(), source: "stdin" };
+    const text = readStdin();
+    if (!text.trim()) {
+      return { ok: false, error: "No diff received on stdin — nothing to review." };
+    }
+    return { ok: true, text, source: "stdin" };
   }
 
   const unstaged = execGit(["diff"]);
