@@ -1,5 +1,5 @@
 import { ArrowLeftRight, MessageSquarePlus, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useDiff } from "../context/DiffContext";
 import { renderLineSegments } from "../lib/renderLine";
 import { scrollToLineKey } from "../lib/scrollToLineKey";
 import type { LineType, WordDiffSpan } from "../types";
@@ -74,8 +74,12 @@ export default function DiffLine({
   onSaveComment,
   moveInfo,
 }: DiffLineProps) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [draft, setDraft] = useState(commentText ?? "");
+  // Editing/draft state lives in DiffContext, not local component state:
+  // toggling Unified<->Split remounts this whole component tree, and a
+  // draft the user was mid-typing must survive that remount.
+  const { state, openCommentDraft, setCommentDraft, discardCommentDraft } = useDiff();
+  const isEditing = matchKey ? state.editingLineKeys.has(matchKey) : false;
+  const draft = matchKey ? (state.commentDrafts[matchKey] ?? commentText ?? "") : "";
 
   const segments = renderLineSegments(content, lang, spans);
   // A moved line reads as "relocated," not "deleted"/"added" — the accent
@@ -103,18 +107,22 @@ export default function DiffLine({
     );
 
   function openEditor() {
-    setDraft(commentText ?? "");
-    setIsEditing(true);
+    if (!matchKey) return;
+    openCommentDraft(matchKey, commentText ?? "");
   }
 
   function handleSave() {
     onSaveComment?.(draft);
-    setIsEditing(false);
+    if (matchKey) discardCommentDraft(matchKey);
   }
 
   function handleDelete() {
     onSaveComment?.("");
-    setIsEditing(false);
+    if (matchKey) discardCommentDraft(matchKey);
+  }
+
+  function handleCancel() {
+    if (matchKey) discardCommentDraft(matchKey);
   }
 
   return (
@@ -159,7 +167,7 @@ export default function DiffLine({
           <textarea
             autoFocus
             value={draft}
-            onChange={(e) => setDraft(e.target.value)}
+            onChange={(e) => matchKey && setCommentDraft(matchKey, e.target.value)}
             placeholder="Leave a note to yourself about this line…"
             rows={2}
             className="w-full resize-none rounded-md border border-border-strong bg-surface px-2 py-1.5 font-sans text-xs text-text outline-none focus-visible:border-accent"
@@ -174,7 +182,7 @@ export default function DiffLine({
             </button>
             <button
               type="button"
-              onClick={() => setIsEditing(false)}
+              onClick={handleCancel}
               className="rounded-md border border-border-strong px-2.5 py-1 text-xs font-medium text-text-muted"
             >
               Cancel
