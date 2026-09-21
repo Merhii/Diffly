@@ -28,6 +28,25 @@ describe("resolveDiffInput", () => {
     expect(result).toEqual({ ok: true, text: "content of some.diff", source: "some.diff" });
   });
 
+  it("reports a clean error instead of throwing when the file path doesn't exist", () => {
+    const result = resolveDiffInput({
+      argPath: "nope.diff",
+      isTTY: true,
+      readFile: () => {
+        throw new Error("ENOENT: no such file or directory, open 'nope.diff'");
+      },
+      readStdin: () => {
+        throw new Error("should not read stdin when a path is given");
+      },
+      execGit: () => {
+        throw new Error("should not call git when a path is given");
+      },
+    });
+    expect(result.ok).toBe(false);
+    expect(result.error).toContain("nope.diff");
+    expect(result.error).toContain("ENOENT");
+  });
+
   it("reads stdin when piped and no path is given", () => {
     const result = resolveDiffInput({
       argPath: undefined,

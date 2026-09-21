@@ -21,7 +21,13 @@
  */
 export function resolveDiffInput({ argPath, isTTY, readFile, readStdin, execGit }) {
   if (argPath) {
-    return { ok: true, text: readFile(argPath), source: argPath };
+    let text;
+    try {
+      text = readFile(argPath);
+    } catch (err) {
+      return { ok: false, error: `Could not read "${argPath}": ${err.message}` };
+    }
+    return { ok: true, text, source: argPath };
   }
 
   if (!isTTY) {
