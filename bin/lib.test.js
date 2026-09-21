@@ -47,6 +47,38 @@ describe("resolveDiffInput", () => {
     expect(result.error).toContain("ENOENT");
   });
 
+  it("reports an error instead of loading an empty file path", () => {
+    const result = resolveDiffInput({
+      argPath: "empty.diff",
+      isTTY: true,
+      readFile: () => "   \n  ",
+      readStdin: () => {
+        throw new Error("should not read stdin when a path is given");
+      },
+      execGit: () => {
+        throw new Error("should not call git when a path is given");
+      },
+    });
+    expect(result.ok).toBe(false);
+    expect(result.error).toMatch(/empty\.diff.*empty/i);
+  });
+
+  it("reports an error instead of loading empty piped stdin", () => {
+    const result = resolveDiffInput({
+      argPath: undefined,
+      isTTY: false,
+      readFile: () => {
+        throw new Error("should not read a file");
+      },
+      readStdin: () => "   ",
+      execGit: () => {
+        throw new Error("should not call git when stdin is piped");
+      },
+    });
+    expect(result.ok).toBe(false);
+    expect(result.error).toMatch(/stdin/i);
+  });
+
   it("reads stdin when piped and no path is given", () => {
     const result = resolveDiffInput({
       argPath: undefined,
