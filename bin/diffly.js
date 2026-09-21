@@ -48,6 +48,27 @@ function execGit(args) {
   }
 }
 
+// A fixed default port — rather than an ephemeral one — means repeated
+// launches land on the same http://localhost:<port> origin, so origin-scoped
+// browser state (theme, sidebar, per-diff comments/viewed-status) actually
+// persists across separate `diffly` runs instead of resetting every time.
+// Falls back to an ephemeral port only if something else already holds this
+// one (e.g. two diffly instances running at once) — in that case only
+// whichever instance is on the usual port gets the "remembered" state.
+const PREFERRED_PORT = 51730;
+
+function listen(server, port, onReady) {
+  server.once("error", (err) => {
+    if (err.code === "EADDRINUSE" && port !== 0) {
+      listen(server, 0, onReady);
+    } else {
+      console.error(`Could not start the server: ${err.message}`);
+      process.exitCode = 1;
+    }
+  });
+  server.listen(port, onReady);
+}
+
 function openBrowser(url) {
   const platform = process.platform;
   const command = platform === "darwin" ? "open" : platform === "win32" ? "start" : "xdg-open";
@@ -122,7 +143,7 @@ function main() {
     }
   });
 
-  server.listen(0, () => {
+  listen(server, PREFERRED_PORT, () => {
     const { port } = server.address();
     const url = `http://localhost:${port}`;
     console.log(`Diffly loaded from ${result.source} — running at ${url} (press Ctrl+C to stop)`);
