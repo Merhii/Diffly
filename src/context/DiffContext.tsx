@@ -30,6 +30,8 @@ interface AppState {
   collapsedFileIds: Set<string>;
   viewedFileIds: Set<string>;
   comments: Record<string, string>;
+  editingLineKeys: Set<string>;
+  commentDrafts: Record<string, string>;
   search: SearchState;
 }
 
@@ -45,6 +47,9 @@ type Action =
   | { type: "TOGGLE_FILE_VIEWED"; fileId: string }
   | { type: "SET_ALL_VIEWED"; viewed: boolean; fileIds: string[] }
   | { type: "SET_COMMENT"; lineKey: string; text: string }
+  | { type: "OPEN_COMMENT_DRAFT"; lineKey: string; initialText: string }
+  | { type: "SET_COMMENT_DRAFT"; lineKey: string; text: string }
+  | { type: "DISCARD_COMMENT_DRAFT"; lineKey: string }
   | { type: "SET_SEARCH_QUERY"; query: string }
   | { type: "SET_SEARCH_SCOPE"; includeFilenames: boolean }
   | { type: "NEXT_MATCH" }
@@ -69,6 +74,8 @@ function initialState(): AppState {
     collapsedFileIds: new Set(),
     viewedFileIds: new Set(),
     comments: {},
+    editingLineKeys: new Set(),
+    commentDrafts: {},
     search: initialSearch,
   };
 }
@@ -101,6 +108,8 @@ function reducer(state: AppState, action: Action): AppState {
         collapsedFileIds: new Set(viewedFileIds),
         viewedFileIds,
         comments: action.record.comments,
+        editingLineKeys: new Set(),
+        commentDrafts: {},
         search: recomputeMatches(action.diff, { ...initialSearch }),
       };
     }
@@ -116,6 +125,8 @@ function reducer(state: AppState, action: Action): AppState {
         collapsedFileIds: new Set(),
         viewedFileIds: new Set(),
         comments: {},
+        editingLineKeys: new Set(),
+        commentDrafts: {},
         search: initialSearch,
       };
     case "SET_VIEW_MODE":
@@ -174,6 +185,26 @@ function reducer(state: AppState, action: Action): AppState {
       persist(state, { comments });
       return { ...state, comments };
     }
+    case "OPEN_COMMENT_DRAFT": {
+      const editingLineKeys = new Set(state.editingLineKeys);
+      editingLineKeys.add(action.lineKey);
+      // Reopening a line whose draft already exists (e.g. after a view-mode
+      // remount) must keep that draft, not reset it back to the saved text.
+      const commentDrafts =
+        action.lineKey in state.commentDrafts
+          ? state.commentDrafts
+          : { ...state.commentDrafts, [action.lineKey]: action.initialText };
+      return { ...state, editingLineKeys, commentDrafts };
+    }
+    case "SET_COMMENT_DRAFT":
+      return { ...state, commentDrafts: { ...state.commentDrafts, [action.lineKey]: action.text } };
+    case "DISCARD_COMMENT_DRAFT": {
+      const editingLineKeys = new Set(state.editingLineKeys);
+      editingLineKeys.delete(action.lineKey);
+      const commentDrafts = { ...state.commentDrafts };
+      delete commentDrafts[action.lineKey];
+      return { ...state, editingLineKeys, commentDrafts };
+    }
     case "SET_SEARCH_QUERY":
       return { ...state, search: recomputeMatches(state.diff, { ...state.search, query: action.query }) };
     case "SET_SEARCH_SCOPE":
@@ -212,6 +243,9 @@ interface DiffContextValue {
   toggleFileViewed: (fileId: string) => void;
   markAllViewed: (viewed: boolean) => void;
   setComment: (lineKey: string, text: string) => void;
+  openCommentDraft: (lineKey: string, initialText: string) => void;
+  setCommentDraft: (lineKey: string, text: string) => void;
+  discardCommentDraft: (lineKey: string) => void;
   setSearchQuery: (query: string) => void;
   setSearchScope: (includeFilenames: boolean) => void;
   nextMatch: () => void;
@@ -268,6 +302,18 @@ export function DiffProvider({ children }: { children: ReactNode }) {
     (lineKey: string, text: string) => dispatch({ type: "SET_COMMENT", lineKey, text }),
     [],
   );
+  const openCommentDraft = useCallback(
+    (lineKey: string, initialText: string) => dispatch({ type: "OPEN_COMMENT_DRAFT", lineKey, initialText }),
+    [],
+  );
+  const setCommentDraft = useCallback(
+    (lineKey: string, text: string) => dispatch({ type: "SET_COMMENT_DRAFT", lineKey, text }),
+    [],
+  );
+  const discardCommentDraft = useCallback(
+    (lineKey: string) => dispatch({ type: "DISCARD_COMMENT_DRAFT", lineKey }),
+    [],
+  );
   const setSearchQuery = useCallback((query: string) => dispatch({ type: "SET_SEARCH_QUERY", query }), []);
   const setSearchScope = useCallback(
     (includeFilenames: boolean) => dispatch({ type: "SET_SEARCH_SCOPE", includeFilenames }),
@@ -290,6 +336,9 @@ export function DiffProvider({ children }: { children: ReactNode }) {
       toggleFileViewed,
       markAllViewed,
       setComment,
+      openCommentDraft,
+      setCommentDraft,
+      discardCommentDraft,
       setSearchQuery,
       setSearchScope,
       nextMatch,
@@ -308,6 +357,9 @@ export function DiffProvider({ children }: { children: ReactNode }) {
       toggleFileViewed,
       markAllViewed,
       setComment,
+      openCommentDraft,
+      setCommentDraft,
+      discardCommentDraft,
       setSearchQuery,
       setSearchScope,
       nextMatch,
