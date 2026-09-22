@@ -9,7 +9,7 @@ import { readFile as readFileAsync } from "node:fs/promises";
 import { fstatSync, readFileSync } from "node:fs";
 import { execFileSync, spawn } from "node:child_process";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { injectDiffIntoHtml, resolveDiffInput } from "./lib.js";
 
 // `process.stdin.isTTY` is falsy both for a real pipe (`git diff | diffly`)
@@ -85,21 +85,16 @@ function openBrowser(url) {
   child.unref();
 }
 
-function main() {
-  // viewer.html (not index.html) is the review app — index.html is the
-  // public marketing site's entry and has no diff-loading capability at
-  // all, see vite.config.ts's two-entry build.
-  const distViewerPath = path.join(distDir, "viewer.html");
-  try {
-    readFileSync(distViewerPath);
-  } catch {
-    console.error(`No build found at ${distDir} (missing viewer.html). Run "npm run build" first.`);
-    process.exitCode = 1;
-    return;
-  }
+async function main() {
+  // `--tui` is a flag, not a positional arg — strip it out before treating
+  // whatever's left as the file-path argument.
+  const args = process.argv.slice(2);
+  const tuiFlagIndex = args.indexOf("--tui");
+  const useTui = tuiFlagIndex !== -1;
+  if (useTui) args.splice(tuiFlagIndex, 1);
 
   const result = resolveDiffInput({
-    argPath: process.argv[2],
+    argPath: args[0],
     isTTY: !hasPipedStdin(),
     readFile: (p) => readFileSync(p, "utf8"),
     readStdin: () => readFileSync(0, "utf8"),
@@ -108,6 +103,35 @@ function main() {
 
   if (!result.ok) {
     console.error(result.error);
+    process.exitCode = 1;
+    return;
+  }
+
+  if (useTui) {
+    // Bundled separately by esbuild (see package.json's build:tui script) —
+    // Ink renders to the terminal, not the DOM, so it has no business going
+    // through Vite's browser build.
+    const distTuiPath = path.join(__dirname, "..", "dist-tui", "index.js");
+    let runTui;
+    try {
+      ({ runTui } = await import(pathToFileURL(distTuiPath).href));
+    } catch {
+      console.error(`No TUI build found at ${distTuiPath}. Run "npm run build" first.`);
+      process.exitCode = 1;
+      return;
+    }
+    await runTui(result.text, result.source);
+    return;
+  }
+
+  // viewer.html (not index.html) is the review app — index.html is the
+  // public marketing site's entry and has no diff-loading capability at
+  // all, see vite.config.ts's two-entry build.
+  const distViewerPath = path.join(distDir, "viewer.html");
+  try {
+    readFileSync(distViewerPath);
+  } catch {
+    console.error(`No build found at ${distDir} (missing viewer.html). Run "npm run build" first.`);
     process.exitCode = 1;
     return;
   }
