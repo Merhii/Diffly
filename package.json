@@ -3,18 +3,23 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
   "bin": {
     "diffly": "./bin/diffly.js"
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && npm run build:tui",
+    "build:tui": "esbuild src/tui/index.tsx --bundle --minify --platform=node --format=esm --jsx=automatic --alias:react-devtools-core=./scripts/tui-devtools-stub.js --banner:js=\"import{createRequire as __diffly_createRequire}from 'module';const require=__diffly_createRequire(import.meta.url);\" --outfile=dist-tui/index.js",
     "lint": "oxlint",
     "preview": "vite preview",
     "test": "vitest run"
   },
   "dependencies": {
     "diff": "^9.0.0",
+    "ink": "^6.8.0",
     "lucide-react": "^1.45.0",
     "parse-diff": "^0.12.0",
     "prismjs": "^1.30.0",
@@ -28,6 +33,8 @@
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
     "@vitejs/plugin-react": "^6.1.1",
+    "esbuild": "^0.28.2",
+    "ink-testing-library": "^4.0.0",
     "oxlint": "^1.81.0",
     "tailwindcss": "^4.3.3",
     "typescript": "~6.0.2",
