@@ -55,12 +55,35 @@ and there's no size limit on the diff.
 Not published to npm yet, so today it's run from a clone:
 
 ```sh
-npm run build          # bin/diffly.js serves dist/, so build first
+npm run build          # bin/diffly.js serves dist/ and dist-tui/, so build first
 node bin/diffly.js my.patch     # load a specific file
 git diff | node bin/diffly.js   # pipe a diff in
 node bin/diffly.js              # no argument or pipe: uses `git diff`,
                                  # falling back to `git diff --staged`
+node bin/diffly.js --tui        # same input resolution, renders in the
+                                 # terminal instead — no browser at all
 ```
 
 Or run `npm link` once to get a global `diffly` command on this machine
-(`diffly my.patch`, `git diff | diffly`, bare `diffly`).
+(`diffly my.patch`, `git diff | diffly`, bare `diffly`, `diffly --tui`).
+
+## Claude Code plugin
+
+This repo is also a Claude Code plugin (`.claude-plugin/plugin.json` +
+`skills/diffly/`) — a skill that teaches an agent when to reach for `diffly`
+and which mode is safe for it to launch on your behalf (browser mode isn't
+interactive, so it can; `--tui` needs a real terminal, so it tells you the
+command to run yourself instead).
+
+To try it locally from a clone, for this session only:
+
+```sh
+claude --plugin-dir .
+```
+
+To install it properly (adds this repo as its own marketplace):
+
+```
+/plugin marketplace add https://github.com/Merhii/Diffly
+/plugin install diffly@diffly
+```
