@@ -3,8 +3,12 @@ import { Box, Text, useApp, useInput, useStdout } from "ink";
 import type { MoveCounterpart } from "../lib/moveLookup";
 import { buildSearchMatches } from "../lib/search";
 import type { DiffRecord, FindReplaceOperation, ParsedDiff } from "../types";
-import { buildTuiRows, type TuiRow } from "./buildRows";
-import { jumpKeyFileId, matchToKey, reducer, resolveJumpRow, type TuiState } from "./store";
+import type { TuiRow, TuiSplitSide } from "./buildRows";
+import { currentRows, jumpKeyFileId, matchToKey, reducer, resolveJumpRow, type TuiState } from "./store";
+
+// Below this width a split view's two columns would be too cramped to read —
+// the toggle just refuses and explains why instead of rendering garbage.
+const MIN_SPLIT_COLUMNS = 60;
 
 interface AppProps {
   diff: ParsedDiff;
@@ -25,6 +29,7 @@ function initialState(props: AppProps): TuiState {
     viewedFileIds: new Set(props.record.viewedFileIds),
     comments: props.record.comments,
     cursorRow: 0,
+    viewMode: "unified",
     mode: "browse",
     inputBuffer: "",
     commentTargetKey: null,
@@ -52,15 +57,37 @@ function LineRow({ row, active }: { row: Extract<TuiRow, { kind: "line" }>; acti
   );
 }
 
+function SplitSideText({ side, active, width }: { side: TuiSplitSide | null; active: boolean; width: number }) {
+  if (!side) {
+    return (
+      <Box width={width}>
+        <Text> </Text>
+      </Box>
+    );
+  }
+  const color = TYPE_COLOR[side.type];
+  const marker = TYPE_MARKER[side.type];
+  return (
+    <Box width={width}>
+      <Text backgroundColor={active ? "blueBright" : undefined} color={active ? "black" : color} wrap="truncate-end">
+        {marker} {side.content}
+        {side.moveInfo?.isFirstInRun ? `  ↔ moved (${side.moveInfo.lineCount})` : ""}
+      </Text>
+    </Box>
+  );
+}
+
 export default function App(props: AppProps) {
   const { exit } = useApp();
   const { stdout } = useStdout();
   const [state, dispatch] = useReducer(reducer, props, initialState);
 
   const rows = useMemo(
-    () => buildTuiRows(state.diff, state.collapsedFileIds, state.viewedFileIds, state.moveLookup),
-    [state.diff, state.collapsedFileIds, state.viewedFileIds, state.moveLookup],
+    () => currentRows(state),
+    [state.diff, state.collapsedFileIds, state.viewedFileIds, state.moveLookup, state.viewMode],
   );
+  const termWidth = stdout?.columns ?? 80;
+  const columnWidth = Math.max(Math.floor(termWidth / 2) - 1, 10);
 
   // Mirrors the browser's search/find-replace jump effect: expand the
   // target file first if it's collapsed, then resolve the row once the
@@ -164,17 +191,25 @@ export default function App(props: AppProps) {
     }
     if (input === "m") {
       const row = rows[cursorRow];
-      if (row?.kind === "line") {
-        dispatch({ type: "ENTER_COMMENT", lineKey: row.matchKey, initialText: state.comments[row.matchKey] ?? "" });
-      }
+      const key = row?.kind === "line" ? row.matchKey : row?.kind === "split-line" ? (row.right ?? row.left)?.matchKey : null;
+      if (key) dispatch({ type: "ENTER_COMMENT", lineKey: key, initialText: state.comments[key] ?? "" });
       return;
     }
     if (input === "d") {
       const row = rows[cursorRow];
-      if (row?.kind === "line" && state.comments[row.matchKey]) {
-        dispatch({ type: "ENTER_COMMENT", lineKey: row.matchKey, initialText: state.comments[row.matchKey] });
+      const key = row?.kind === "line" ? row.matchKey : row?.kind === "split-line" ? (row.right ?? row.left)?.matchKey : null;
+      if (key && state.comments[key]) {
+        dispatch({ type: "ENTER_COMMENT", lineKey: key, initialText: state.comments[key] });
         dispatch({ type: "DELETE_COMMENT" });
       }
+      return;
+    }
+    if (input === "s") {
+      if (state.viewMode === "unified" && termWidth < MIN_SPLIT_COLUMNS) {
+        dispatch({ type: "SET_STATUS", message: `Terminal too narrow for split view (need ${MIN_SPLIT_COLUMNS}+ columns)` });
+        return;
+      }
+      dispatch({ type: "TOGGLE_VIEW_MODE" });
       return;
     }
     if (input === "?") {
@@ -190,7 +225,8 @@ export default function App(props: AppProps) {
         <Text>c   collapse/expand file          v   mark file viewed</Text>
         <Text>m   add/edit comment on line      d   delete comment on line</Text>
         <Text>/   search                        n / N   next / previous match</Text>
-        <Text>q   quit                          ?   toggle this help</Text>
+        <Text>s   toggle unified / split view   q   quit</Text>
+        <Text>?   toggle this help</Text>
         <Text color="gray">Press any key to close</Text>
       </Box>
     );
@@ -237,6 +273,20 @@ export default function App(props: AppProps) {
               </Text>
             );
           }
+          if (row.kind === "split-line") {
+            const commentKey = (row.right ?? row.left)?.matchKey;
+            return (
+              <Box key={`${row.left?.matchKey ?? "x"}-${row.right?.matchKey ?? "x"}`} flexDirection="column">
+                <Box>
+                  <SplitSideText side={row.left} active={active} width={columnWidth} />
+                  <SplitSideText side={row.right} active={active} width={columnWidth} />
+                </Box>
+                {commentKey && state.comments[commentKey] && (
+                  <Text color="magenta"> ↳ {state.comments[commentKey]}</Text>
+                )}
+              </Box>
+            );
+          }
           return (
             <Box key={row.matchKey} flexDirection="column">
               <LineRow row={row} active={active} />
@@ -252,7 +302,8 @@ export default function App(props: AppProps) {
           <Text>Comment: {state.inputBuffer}_</Text>
         ) : (
           <Text color="gray">
-            {state.statusMessage ?? "j/k move · c collapse · v viewed · m comment · / search · ? help · q quit"}
+            {state.statusMessage ??
+              `j/k move · c collapse · v viewed · m comment · / search · s ${state.viewMode === "unified" ? "split" : "unified"} · ? help · q quit`}
           </Text>
         )}
       </Box>

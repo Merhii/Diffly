@@ -1,9 +1,10 @@
 import { writeDiffRecordFs } from "../lib/diffStore";
 import type { FindReplaceOperation, ParsedDiff, SearchMatch } from "../types";
 import type { MoveCounterpart } from "../lib/moveLookup";
-import { buildTuiRows, type TuiRow } from "./buildRows";
+import { buildTuiRows, buildTuiSplitRows, type TuiRow, type TuiSplitRow } from "./buildRows";
 
 export type Mode = "browse" | "search" | "comment" | "help";
+export type ViewMode = "unified" | "split";
 
 export interface TuiState {
   diff: ParsedDiff;
@@ -14,6 +15,7 @@ export interface TuiState {
   viewedFileIds: Set<string>;
   comments: Record<string, string>;
   cursorRow: number;
+  viewMode: ViewMode;
   mode: Mode;
   inputBuffer: string;
   commentTargetKey: string | null;
@@ -42,6 +44,7 @@ export type Action =
   | { type: "CLEAR_PENDING_JUMP" }
   | { type: "REQUEST_EXPAND_FOR_JUMP"; fileId: string }
   | { type: "TOGGLE_HELP" }
+  | { type: "TOGGLE_VIEW_MODE" }
   | { type: "SET_STATUS"; message: string | null };
 
 function persist(state: TuiState, comments: Record<string, string>): void {
@@ -53,12 +56,16 @@ export function matchToKey(match: SearchMatch): string {
 }
 
 /** Resolves a jump target (a lineKey, or "file:<id>" for a filename match) to a row index in an already-computed row list. */
-export function resolveJumpRow(rows: TuiRow[], jumpKey: string): number {
+export function resolveJumpRow(rows: Array<TuiRow | TuiSplitRow>, jumpKey: string): number {
   if (jumpKey.startsWith("file:")) {
     const fileId = jumpKey.slice("file:".length);
     return rows.findIndex((row) => row.kind === "file-header" && row.fileId === fileId);
   }
-  return rows.findIndex((row) => row.kind === "line" && row.matchKey === jumpKey);
+  return rows.findIndex(
+    (row) =>
+      (row.kind === "line" && row.matchKey === jumpKey) ||
+      (row.kind === "split-line" && (row.left?.matchKey === jumpKey || row.right?.matchKey === jumpKey)),
+  );
 }
 
 /** The fileId a jump target belongs to — used to check/clear collapse before resolving its row. */
@@ -145,6 +152,11 @@ export function reducer(state: TuiState, action: Action): TuiState {
     }
     case "TOGGLE_HELP":
       return { ...state, mode: state.mode === "help" ? "browse" : "help" };
+    case "TOGGLE_VIEW_MODE":
+      // Row counts/order differ between the two layouts (split pairs a
+      // del+add into one row) — resetting the cursor is simpler and safer
+      // than trying to map a position across the two shapes.
+      return { ...state, viewMode: state.viewMode === "unified" ? "split" : "unified", cursorRow: 0 };
     case "SET_STATUS":
       return { ...state, statusMessage: action.message };
     default:
@@ -152,6 +164,8 @@ export function reducer(state: TuiState, action: Action): TuiState {
   }
 }
 
-export function currentRows(state: TuiState): TuiRow[] {
-  return buildTuiRows(state.diff, state.collapsedFileIds, state.viewedFileIds, state.moveLookup);
+export function currentRows(state: TuiState): Array<TuiRow | TuiSplitRow> {
+  return state.viewMode === "split"
+    ? buildTuiSplitRows(state.diff, state.collapsedFileIds, state.viewedFileIds, state.moveLookup)
+    : buildTuiRows(state.diff, state.collapsedFileIds, state.viewedFileIds, state.moveLookup);
 }

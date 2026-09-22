@@ -118,6 +118,20 @@ describe("TUI App", () => {
     expect(frame).toContain("looks risky");
   });
 
+  it("toggles into split view with 's' and shows both sides of a modify-pair on one row", async () => {
+    const { stdin, lastFrame } = renderApp();
+    expect(lastFrame()).toContain("j/k move · c collapse · v viewed · m comment · / search · s split");
+
+    await press(stdin, "s");
+    const frame = lastFrame();
+    expect(frame).toContain("old line");
+    expect(frame).toContain("new line");
+    expect(frame).toContain("s unified"); // footer now offers to toggle back
+
+    await press(stdin, "s");
+    expect(lastFrame()).toContain("s split"); // back to unified, offering split again
+  });
+
   it("searches with '/' and jumps to the match on Enter, expanding a collapsed target file", async () => {
     const { stdin, lastFrame } = renderApp();
     for (let i = 0; i < 5; i += 1) await press(stdin, "j"); // move cursor down to f2's file-header row
