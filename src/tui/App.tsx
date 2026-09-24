@@ -82,17 +82,19 @@ export default function App(props: AppProps) {
   const { stdout } = useStdout();
   const [state, dispatch] = useReducer(reducer, props, initialState);
 
+  // Rebuilding every row on each cursor move would be wasted work on a large
+  // diff, so this memoizes on just the fields row building actually reads.
+  const { diff, collapsedFileIds, viewedFileIds, moveLookup, viewMode } = state;
   const rows = useMemo(
-    () => currentRows(state),
-    [state.diff, state.collapsedFileIds, state.viewedFileIds, state.moveLookup, state.viewMode],
+    () => currentRows({ diff, collapsedFileIds, viewedFileIds, moveLookup, viewMode }),
+    [diff, collapsedFileIds, viewedFileIds, moveLookup, viewMode],
   );
   const termWidth = stdout?.columns ?? 80;
   const columnWidth = Math.max(Math.floor(termWidth / 2) - 1, 10);
 
-  // Mirrors the browser's search/find-replace jump effect: expand the
-  // target file first if it's collapsed, then resolve the row once the
-  // rows list reflects that (see App.tsx's search-jump / FindReplaceSummary
-  // effects in the browser UI for the same pattern).
+  // A jump target can live inside a file the user has collapsed, so this
+  // runs in two passes: expand the file first, then resolve the row once
+  // the rebuilt row list actually contains it.
   useEffect(() => {
     if (!state.pendingJumpKey) return;
     const fileId = jumpKeyFileId(state.pendingJumpKey);

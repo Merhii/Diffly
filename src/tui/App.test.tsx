@@ -5,10 +5,11 @@ import App from "./App";
 
 // Persistence goes through the real filesystem in production (diffStore.ts
 // writes to ~/.diffly/state.json) — stubbed here so these tests stay
-// hermetic, same spirit as comments.test.ts's fake localStorage.
+// hermetic and don't touch the machine running them.
 vi.mock("../lib/diffStore", () => ({
-  writeDiffRecordFs: vi.fn(),
-  loadDiffRecordFs: vi.fn(() => ({ comments: {}, viewedFileIds: [] })),
+  hashDiffText: vi.fn(() => "testhash"),
+  writeDiffRecord: vi.fn(),
+  loadDiffRecord: vi.fn(() => ({ comments: {}, viewedFileIds: [] })),
 }));
 
 const diff: ParsedDiff = {

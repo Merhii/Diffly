@@ -57,35 +57,3 @@ export function resolveDiffInput({ argPath, isTTY, readFile, readStdin, execGit 
   };
 }
 
-// Vite's built index.html always has the app's own bundled entry script as
-// a "/assets/..." src (vs. e.g. the analytics script, which is also
-// type="module" but points at an external URL) — matching on that is more
-// specific than matching any `type="module"` tag, and independent of tag
-// order in the file.
-const APP_ENTRY_SCRIPT = /<script[^>]*\ssrc="\/assets\/[^"]+"[^>]*><\/script>/i;
-
-/**
- * Injects the preloaded diff text into a built index.html, as an inline
- * script that runs before the app's own entry script.
- *
- * JSON.stringify makes the string a valid, safely-quoted JS literal, but it
- * does NOT make it safe to embed inside an HTML <script> block: the HTML
- * tokenizer looks for the raw text "</script" regardless of JS string
- * context, so a diff containing that text would truncate the tag early.
- * Escaping the slash (`<\/script`) is a no-op inside the JS string (`\/` is
- * just `/`) but breaks the literal match the HTML parser is looking for.
- *
- * @param {string} html
- * @param {string} diffText
- * @returns {string}
- */
-export function injectDiffIntoHtml(html, diffText) {
-  if (!APP_ENTRY_SCRIPT.test(html)) {
-    throw new Error("Could not find the app's bundled entry script in index.html to inject before.");
-  }
-
-  const safeJson = JSON.stringify(diffText).replace(/<\/script/gi, "<\\/script");
-  const injected = `<script>window.__DIFFLY_PRELOADED_DIFF__ = ${safeJson};</script>\n    `;
-
-  return html.replace(APP_ENTRY_SCRIPT, (match) => injected + match);
-}

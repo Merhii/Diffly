@@ -1,7 +1,7 @@
 {
   "name": "diffly",
-  "version": "0.1.0",
-  "description": "Review a diff GitHub-PR style, from the terminal or a local browser tab — no upload, nothing leaves your machine.",
+  "version": "0.2.0",
+  "description": "A GitHub-PR-style diff viewer that runs in your terminal — nothing leaves your machine.",
   "author": {
     "name": "Karim Merhi",
     "email": "mmerhikarim@gmail.com"

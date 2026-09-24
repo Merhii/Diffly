@@ -34,9 +34,6 @@ export interface ParsedDiff {
   files: DiffFile[];
 }
 
-export type ViewMode = "unified" | "split";
-export type Theme = "light" | "dark";
-
 export interface DiffRecord {
   comments: Record<string, string>;
   viewedFileIds: string[];
@@ -58,10 +55,6 @@ export interface WordDiffResult {
   newSpans: WordDiffSpan[];
 }
 
-export interface RenderedSegment {
-  html: string;
-  changed: boolean;
-}
 
 export interface SearchMatch {
   fileId: string;
