@@ -1,21 +1,21 @@
 import { render } from "ink";
-import { hashDiffText } from "../lib/comments";
 import { detectOperations } from "../lib/detectOperations";
-import { loadDiffRecordFs } from "../lib/diffStore";
+import { hashDiffText, loadDiffRecord } from "../lib/diffStore";
 import { loadDiffText } from "../lib/ingestDiff";
 import { buildMoveLookup } from "../lib/moveLookup";
 import App from "./App";
 
 /**
  * Entry point bundled by esbuild into dist-tui/index.js (see package.json's
- * build:tui script) and dynamically imported by bin/diffly.js's --tui
- * branch. Kept separate from the browser's main.tsx/App.tsx: this renders
- * to a terminal via Ink, not the DOM, and needs its own bundle since Vite's
- * browser build isn't the right tool for a Node-target executable.
+ * build:tui script) and dynamically imported by bin/diffly.js once it has a
+ * diff to show. Bundled rather than run from source because Ink and React
+ * are a real dependency graph, and resolving them at startup from wherever
+ * the user happens to have diffly installed is slower and more fragile than
+ * shipping one file.
  */
 export async function runTui(diffText: string, sourceLabel: string): Promise<void> {
   if (!process.stdin.isTTY || !process.stdout.isTTY) {
-    console.error("diffly --tui requires an interactive terminal (no TTY detected).");
+    console.error("diffly needs an interactive terminal to render in (no TTY detected).");
     process.exitCode = 1;
     return;
   }
@@ -28,7 +28,7 @@ export async function runTui(diffText: string, sourceLabel: string): Promise<voi
   }
 
   const diffId = hashDiffText(diffText);
-  const record = loadDiffRecordFs(diffId);
+  const record = loadDiffRecord(diffId);
   const operations = detectOperations(result.diff);
   const moveLookup = buildMoveLookup(operations.moves);
 

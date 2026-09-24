@@ -1,16 +1,13 @@
 #!/usr/bin/env node
-// Serves the already-built dist/ bundle with a diff pre-loaded, so a
-// developer or a coding agent can open Diffly without any manual
-// drag-drop/paste. See bin/lib.js for the pure input-resolution and
-// HTML-injection logic this wires together.
+// Resolves a diff from an argument, a pipe, or the surrounding git repo, and
+// renders it in the terminal. See bin/lib.js for the pure input-resolution
+// logic and src/tui/ for the renderer this hands off to.
 
-import { createServer } from "node:http";
-import { readFile as readFileAsync } from "node:fs/promises";
 import { fstatSync, readFileSync } from "node:fs";
-import { execFileSync, spawn } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { injectDiffIntoHtml, resolveDiffInput } from "./lib.js";
+import { resolveDiffInput } from "./lib.js";
 
 // `process.stdin.isTTY` is falsy both for a real pipe (`git diff | diffly`)
 // AND for a non-interactive shell that hasn't piped or redirected anything
@@ -30,15 +27,6 @@ function hasPipedStdin() {
 }
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const distDir = path.join(__dirname, "..", "dist");
-
-const MIME_TYPES = {
-  ".html": "text/html; charset=utf-8",
-  ".js": "text/javascript; charset=utf-8",
-  ".css": "text/css; charset=utf-8",
-  ".svg": "image/svg+xml",
-  ".json": "application/json; charset=utf-8",
-};
 
 function execGit(args) {
   try {
@@ -48,50 +36,11 @@ function execGit(args) {
   }
 }
 
-// A fixed default port — rather than an ephemeral one — means repeated
-// launches land on the same http://localhost:<port> origin, so origin-scoped
-// browser state (theme, sidebar, per-diff comments/viewed-status) actually
-// persists across separate `diffly` runs instead of resetting every time.
-// Falls back to an ephemeral port only if something else already holds this
-// one (e.g. two diffly instances running at once) — in that case only
-// whichever instance is on the usual port gets the "remembered" state.
-const PREFERRED_PORT = 51730;
-
-function listen(server, port, onReady) {
-  server.once("error", (err) => {
-    if (err.code === "EADDRINUSE" && port !== 0) {
-      listen(server, 0, onReady);
-    } else {
-      console.error(`Could not start the server: ${err.message}`);
-      process.exitCode = 1;
-    }
-  });
-  server.listen(port, onReady);
-}
-
-function openBrowser(url) {
-  const platform = process.platform;
-  const command = platform === "darwin" ? "open" : platform === "win32" ? "start" : "xdg-open";
-  // "start" is a cmd.exe builtin, not an executable — needs a shell, and an
-  // empty title argument so a URL containing spaces/special chars isn't
-  // misread as the window title.
-  const child =
-    platform === "win32"
-      ? spawn("cmd", ["/c", "start", '""', url], { stdio: "ignore", detached: true })
-      : spawn(command, [url], { stdio: "ignore", detached: true });
-  child.on("error", () => {
-    console.error(`Could not open a browser automatically — open ${url} manually.`);
-  });
-  child.unref();
-}
-
 async function main() {
-  // `--tui` is a flag, not a positional arg — strip it out before treating
-  // whatever's left as the file-path argument.
-  const args = process.argv.slice(2);
-  const tuiFlagIndex = args.indexOf("--tui");
-  const useTui = tuiFlagIndex !== -1;
-  if (useTui) args.splice(tuiFlagIndex, 1);
+  // The terminal UI is the only mode now, so `--tui` is redundant — still
+  // accepted and ignored so anyone who has it in a script or muscle memory
+  // isn't punished for it.
+  const args = process.argv.slice(2).filter((arg) => arg !== "--tui");
 
   const result = resolveDiffInput({
     argPath: args[0],
@@ -107,76 +56,20 @@ async function main() {
     return;
   }
 
-  if (useTui) {
-    // Bundled separately by esbuild (see package.json's build:tui script) —
-    // Ink renders to the terminal, not the DOM, so it has no business going
-    // through Vite's browser build.
-    const distTuiPath = path.join(__dirname, "..", "dist-tui", "index.js");
-    let runTui;
-    try {
-      ({ runTui } = await import(pathToFileURL(distTuiPath).href));
-    } catch {
-      console.error(`No TUI build found at ${distTuiPath}. Run "npm run build" first.`);
-      process.exitCode = 1;
-      return;
-    }
-    await runTui(result.text, result.source);
-    return;
-  }
-
-  // viewer.html (not index.html) is the review app — index.html is the
-  // public marketing site's entry and has no diff-loading capability at
-  // all, see vite.config.ts's two-entry build.
-  const distViewerPath = path.join(distDir, "viewer.html");
+  // Bundled separately by esbuild (see package.json's build:tui script):
+  // Ink and its React renderer belong to the viewer, not to this entry
+  // point, so they're only loaded once there's actually a diff to show.
+  const distTuiPath = path.join(__dirname, "..", "dist-tui", "index.js");
+  let runTui;
   try {
-    readFileSync(distViewerPath);
+    ({ runTui } = await import(pathToFileURL(distTuiPath).href));
   } catch {
-    console.error(`No build found at ${distDir} (missing viewer.html). Run "npm run build" first.`);
+    console.error(`No build found at ${distTuiPath}. Run "npm run build" first.`);
     process.exitCode = 1;
     return;
   }
 
-  const server = createServer(async (req, res) => {
-    try {
-      const requestPath = decodeURIComponent(new URL(req.url, "http://localhost").pathname);
-      const isViewer = requestPath === "/" || requestPath === "/viewer.html";
-      const filePath = isViewer ? distViewerPath : path.join(distDir, requestPath);
-
-      // never serve a path that escapes dist/
-      if (!filePath.startsWith(distDir)) {
-        res.writeHead(403);
-        res.end("Forbidden");
-        return;
-      }
-
-      if (isViewer) {
-        const html = await readFileAsync(distViewerPath, "utf8");
-        const injected = injectDiffIntoHtml(html, result.text);
-        res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
-        res.end(injected);
-        return;
-      }
-
-      const ext = path.extname(filePath);
-      const body = await readFileAsync(filePath);
-      res.writeHead(200, { "content-type": MIME_TYPES[ext] ?? "application/octet-stream" });
-      res.end(body);
-    } catch {
-      res.writeHead(404);
-      res.end("Not found");
-    }
-  });
-
-  listen(server, PREFERRED_PORT, () => {
-    const { port } = server.address();
-    const url = `http://localhost:${port}`;
-    console.log(`Diffly loaded from ${result.source} — running at ${url} (press Ctrl+C to stop)`);
-    openBrowser(url);
-  });
-
-  process.on("SIGINT", () => {
-    server.close(() => process.exit(0));
-  });
+  await runTui(result.text, result.source);
 }
 
 main();

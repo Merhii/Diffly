@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
   "name": "diffly",
-  "description": "GitHub-PR-style diff review, from the terminal or a local browser tab.",
+  "description": "GitHub-PR-style diff review, in your terminal.",
   "owner": {
     "name": "Karim Merhi",
     "email": "mmerhikarim@gmail.com"
@@ -9,7 +9,7 @@
   "plugins": [
     {
       "name": "diffly",
-      "description": "Review a diff GitHub-PR style, from the terminal or a local browser tab — no upload, nothing leaves your machine.",
+      "description": "A GitHub-PR-style diff viewer that runs in your terminal — nothing leaves your machine.",
       "source": ".",
       "category": "productivity"
     }

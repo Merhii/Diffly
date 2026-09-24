@@ -1,4 +1,4 @@
-import { writeDiffRecordFs } from "../lib/diffStore";
+import { writeDiffRecord } from "../lib/diffStore";
 import type { FindReplaceOperation, ParsedDiff, SearchMatch } from "../types";
 import type { MoveCounterpart } from "../lib/moveLookup";
 import { buildTuiRows, buildTuiSplitRows, type TuiRow, type TuiSplitRow } from "./buildRows";
@@ -48,7 +48,7 @@ export type Action =
   | { type: "SET_STATUS"; message: string | null };
 
 function persist(state: TuiState, comments: Record<string, string>): void {
-  writeDiffRecordFs(state.diffId, { comments, viewedFileIds: Array.from(state.viewedFileIds) });
+  writeDiffRecord(state.diffId, { comments, viewedFileIds: Array.from(state.viewedFileIds) });
 }
 
 export function matchToKey(match: SearchMatch): string {
@@ -164,8 +164,18 @@ export function reducer(state: TuiState, action: Action): TuiState {
   }
 }
 
-export function currentRows(state: TuiState): Array<TuiRow | TuiSplitRow> {
-  return state.viewMode === "split"
-    ? buildTuiSplitRows(state.diff, state.collapsedFileIds, state.viewedFileIds, state.moveLookup)
-    : buildTuiRows(state.diff, state.collapsedFileIds, state.viewedFileIds, state.moveLookup);
+/**
+ * Takes only the slice of state that affects row building, rather than the
+ * whole object — the caller memoizes on exactly these fields, and state
+ * changes on every keystroke.
+ */
+export type RowInputs = Pick<
+  TuiState,
+  "diff" | "collapsedFileIds" | "viewedFileIds" | "moveLookup" | "viewMode"
+>;
+
+export function currentRows(input: RowInputs): Array<TuiRow | TuiSplitRow> {
+  return input.viewMode === "split"
+    ? buildTuiSplitRows(input.diff, input.collapsedFileIds, input.viewedFileIds, input.moveLookup)
+    : buildTuiRows(input.diff, input.collapsedFileIds, input.viewedFileIds, input.moveLookup);
 }

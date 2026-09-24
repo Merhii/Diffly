@@ -59,9 +59,9 @@ function fileLabel(file: DiffFile): string {
 
 /**
  * Flattens a ParsedDiff into a single ordered list of rows the terminal UI
- * scrolls through — one continuous list across every file, mirroring the
- * browser's single-scroll-container layout (rather than a per-file pager),
- * so collapse/expand and cursor movement behave the same way conceptually.
+ * scrolls through — one continuous list across every file rather than a
+ * per-file pager, so the cursor moves through the whole diff uninterrupted
+ * and a collapsed file simply contributes fewer rows.
  * Pure and Ink-agnostic so it can be unit tested like the rest of lib/.
  */
 export function buildTuiRows(
@@ -154,8 +154,8 @@ export function buildTuiRows(
 }
 
 /**
- * Same flattening as buildTuiRows, but paired left/right like the browser's
- * SideBySideDiffView instead of sequential del-then-add — one row per
+ * Same flattening as buildTuiRows, but pairing each del with its
+ * corresponding add instead of listing them sequentially — one row per
  * pairHunkLines result, each side rendered in its own terminal column.
  */
 export function buildTuiSplitRows(
