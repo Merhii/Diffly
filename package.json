@@ -1,6 +1,6 @@
 {
   "name": "@merhi/diffly",
-  "version": "0.1.1",
+  "version": "0.1.0",
   "description": "A GitHub-PR-style diff viewer that runs in your terminal — side-by-side or unified, with search, per-line comments, and move detection. Nothing leaves your machine.",
   "keywords": [
     "diff",
