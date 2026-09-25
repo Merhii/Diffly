@@ -1,6 +1,6 @@
 {
   "name": "diffly",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A GitHub-PR-style diff viewer that runs in your terminal — nothing leaves your machine.",
   "author": {
     "name": "Karim Merhi",
@@ -8,5 +8,11 @@
   },
   "homepage": "https://github.com/Merhii/Diffly",
   "repository": "https://github.com/Merhii/Diffly",
-  "keywords": ["diff", "code-review", "git", "terminal", "tui"]
+  "keywords": [
+    "diff",
+    "code-review",
+    "git",
+    "terminal",
+    "tui"
+  ]
 }

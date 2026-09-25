@@ -1,7 +1,7 @@
 ---
 name: Diffly
 description: Use this when the user wants to visually review a diff or their recent changes in a GitHub-PR-style viewer — phrases like "review this diff", "let me look at the diff", "open diffly", "show me what changed", "pull up the diff viewer", or right after generating a diff/patch the user will want to look over themselves. Diffly is a terminal UI the user runs themselves; it does NOT perform an AI code review, critique, or judge code quality — a request for Claude's opinion on correctness or quality is a different, unrelated task.
-version: 0.2.0
+version: 0.3.0
 ---
 
 # Diffly
@@ -34,11 +34,17 @@ Pick the invocation that matches what they want to see:
 If you've just generated changes yourself, bare `diffly` is almost
 always the right suggestion — it picks up the working tree as-is.
 
-## Locating the CLI
+## If they don't have it installed
 
-If the user reports `diffly: command not found`, they haven't linked
-it. Either they run `npm link` once inside the repo, or they invoke
-this plugin's bundled copy directly:
+`diffly: command not found` means they haven't installed it yet:
+
+    npm i -g @merhi/diffly
+
+Or, without installing anything globally, `npx @merhi/diffly` — same
+tool, same arguments.
+
+Failing that, this plugin ships its own copy of the repo, which can be
+run directly:
 
     node "${CLAUDE_PLUGIN_ROOT}/bin/diffly.js"
 
