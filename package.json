@@ -31,7 +31,7 @@
     "node": ">=20"
   },
   "bin": {
-    "diffly": "./bin/diffly.js"
+    "diffly": "bin/diffly.js"
   },
   "files": [
     "bin/diffly.js",
