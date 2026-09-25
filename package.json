@@ -1,7 +1,31 @@
 {
-  "name": "diffly",
-  "private": true,
-  "version": "0.0.0",
+  "name": "@merhii/diffly",
+  "version": "0.1.0",
+  "description": "A GitHub-PR-style diff viewer that runs in your terminal — side-by-side or unified, with search, per-line comments, and move detection. Nothing leaves your machine.",
+  "keywords": [
+    "diff",
+    "diff-viewer",
+    "code-review",
+    "git",
+    "terminal",
+    "tui",
+    "cli",
+    "ink"
+  ],
+  "homepage": "https://github.com/Merhii/Diffly#readme",
+  "bugs": {
+    "url": "https://github.com/Merhii/Diffly/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Merhii/Diffly.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Karim Merhi",
+    "email": "mmerhikarim@gmail.com",
+    "url": "https://github.com/Merhii"
+  },
   "type": "module",
   "engines": {
     "node": ">=20"
@@ -9,11 +33,17 @@
   "bin": {
     "diffly": "./bin/diffly.js"
   },
+  "files": [
+    "bin/diffly.js",
+    "bin/lib.js",
+    "dist-tui"
+  ],
   "scripts": {
     "build": "tsc -b && npm run build:tui",
     "build:tui": "esbuild src/tui/index.tsx --bundle --minify --platform=node --format=esm --jsx=automatic --alias:react-devtools-core=./scripts/tui-devtools-stub.js --banner:js=\"import{createRequire as __diffly_createRequire}from 'module';const require=__diffly_createRequire(import.meta.url);\" --outfile=dist-tui/index.js",
     "lint": "oxlint",
-    "test": "vitest run"
+    "test": "vitest run",
+    "prepublishOnly": "npm run lint && npm run test && npm run build"
   },
   "dependencies": {
     "diff": "^9.0.0",
